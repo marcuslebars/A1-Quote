@@ -1,0 +1,473 @@
+/**
+ * A1 Marine Care Pricing Engine
+ * Centralized pricing calculation for all marine detailing services
+ */
+
+export interface BoatDetails {
+  length: number;
+  type: string;
+  location: string;
+}
+
+export interface ContactInfo {
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
+export interface GelcoatConfig {
+  area: 'hull' | 'topsides' | 'bowrider';
+  radarArch: boolean;
+  hardTop: boolean;
+  spotWetSanding: number; // number of areas
+  heavyOxidation: boolean;
+}
+
+export interface ExteriorConfig {
+  tier: 'refresh' | 'standard' | 'deep' | 'restoration';
+  teakCleaning: boolean;
+  canvasCleaning: boolean;
+  fenderCleaning: boolean;
+  exteriorOzone: boolean;
+}
+
+export interface InteriorConfig {
+  tier: 'refresh' | 'standard' | 'deep' | 'restoration';
+  moldRemediation: boolean;
+  mattressShampoo: boolean;
+  headDeepClean: boolean;
+  galleyDeepClean: boolean;
+  petHairRemoval: boolean;
+  ozoneInterior: boolean;
+}
+
+export interface CeramicConfig {
+  secondLayer: boolean;
+  teakCeramic: boolean;
+  interiorCeramic: boolean;
+}
+
+export interface GrapheneConfig {
+  secondLayer: boolean;
+  teakGraphene: boolean;
+}
+
+export interface WetSandingConfig {
+  deepScratchRepair: boolean;
+  spotWetSanding: number;
+}
+
+export interface BottomPaintingConfig {
+  secondCoat: boolean;
+  oldPaintRemoval: boolean;
+  heavyGrowthRemoval: boolean;
+  blisterRepair: boolean;
+}
+
+export interface VinylConfig {
+  service: 'removal' | 'install' | 'both';
+  customDesign: boolean;
+}
+
+export interface ServiceSelections {
+  gelcoat?: GelcoatConfig;
+  exterior?: ExteriorConfig;
+  interior?: InteriorConfig;
+  ceramic?: CeramicConfig;
+  graphene?: GrapheneConfig;
+  wetSanding?: WetSandingConfig;
+  bottomPainting?: BottomPaintingConfig;
+  vinyl?: VinylConfig;
+}
+
+export interface PricingResult {
+  subtotal: number;
+  breakdown: string[];
+  requiresManualReview: boolean;
+  reviewReasons: string[];
+}
+
+// Gelcoat pricing tiers
+const GELCOAT_RATES = {
+  hull: [
+    { max: 20, rate: 21 },
+    { max: 25, rate: 23 },
+    { max: 30, rate: 25 },
+    { max: 35, rate: 27 },
+    { max: 40, rate: 30 },
+    { max: 45, rate: 34 },
+    { max: Infinity, rate: 36 }
+  ],
+  topsides: [
+    { max: 20, rate: 24 },
+    { max: 25, rate: 26 },
+    { max: 30, rate: 28 },
+    { max: 35, rate: 31 },
+    { max: 40, rate: 34 },
+    { max: 45, rate: 37 },
+    { max: Infinity, rate: 40 }
+  ],
+  bowrider: [
+    { max: 20, rate: 17 },
+    { max: 25, rate: 19 },
+    { max: 30, rate: 21 },
+    { max: Infinity, rate: 0 } // Manual review
+  ]
+};
+
+const TIER_MULTIPLIERS = {
+  refresh: 1.0,
+  standard: 1.2,
+  deep: 1.4,
+  restoration: 1.6
+};
+
+const INTERIOR_TIER_MULTIPLIERS = {
+  refresh: 1.0,
+  standard: 1.25,
+  deep: 1.5,
+  restoration: 1.75
+};
+
+function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider'): number {
+  const rates = GELCOAT_RATES[area];
+  for (const tier of rates) {
+    if (length <= tier.max) {
+      return tier.rate;
+    }
+  }
+  return rates[rates.length - 1].rate;
+}
+
+export function calculateGelcoat(length: number, config: GelcoatConfig): PricingResult {
+  const breakdown: string[] = [];
+  const reviewReasons: string[] = [];
+  let subtotal = 0;
+
+  const rate = getGelcoatRate(length, config.area);
+  
+  if (config.area === 'bowrider' && length > 30) {
+    reviewReasons.push('Bowrider over 30ft requires manual review');
+    return { subtotal: 0, breakdown, requiresManualReview: true, reviewReasons };
+  }
+
+  if (length > 45) {
+    reviewReasons.push('Boat over 45ft requires manual review');
+  }
+
+  let basePrice = length * rate;
+  breakdown.push(`${config.area.charAt(0).toUpperCase() + config.area.slice(1)}: ${length}ft × $${rate}/ft = $${basePrice.toFixed(2)}`);
+
+  if (config.heavyOxidation) {
+    const oxidationCharge = basePrice * 0.2;
+    breakdown.push(`Heavy Oxidation (+20%): $${oxidationCharge.toFixed(2)}`);
+    basePrice += oxidationCharge;
+  }
+
+  subtotal = basePrice;
+
+  if (config.radarArch) {
+    subtotal += 175;
+    breakdown.push('Radar Arch: $175.00');
+  }
+
+  if (config.hardTop) {
+    subtotal += 475;
+    breakdown.push('Hard Top: $475.00');
+  }
+
+  if (config.spotWetSanding > 0) {
+    const sandingCost = config.spotWetSanding * 125;
+    subtotal += sandingCost;
+    breakdown.push(`Spot Wet Sanding (${config.spotWetSanding} areas): $${sandingCost.toFixed(2)}`);
+  }
+
+  return {
+    subtotal,
+    breakdown,
+    requiresManualReview: reviewReasons.length > 0,
+    reviewReasons
+  };
+}
+
+export function calculateExterior(length: number, config: ExteriorConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const baseRate = 20;
+  const multiplier = TIER_MULTIPLIERS[config.tier];
+  const basePrice = length * baseRate * multiplier;
+  
+  breakdown.push(`Exterior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)}: ${length}ft × $${baseRate}/ft × ${multiplier} = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.teakCleaning) {
+    subtotal += 225;
+    breakdown.push('Teak Cleaning: $225.00');
+  }
+
+  if (config.canvasCleaning) {
+    subtotal += 150;
+    breakdown.push('Canvas Cleaning: $150.00');
+  }
+
+  if (config.fenderCleaning) {
+    subtotal += 60;
+    breakdown.push('Fender Cleaning: $60.00');
+  }
+
+  if (config.exteriorOzone) {
+    subtotal += 100;
+    breakdown.push('Exterior Ozone: $100.00');
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateInterior(length: number, config: InteriorConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const baseRate = 18;
+  const multiplier = INTERIOR_TIER_MULTIPLIERS[config.tier];
+  const basePrice = length * baseRate * multiplier;
+  
+  breakdown.push(`Interior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)}: ${length}ft × $${baseRate}/ft × ${multiplier} = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.moldRemediation) {
+    subtotal += 225;
+    breakdown.push('Mold Remediation: $225.00');
+  }
+
+  if (config.mattressShampoo) {
+    subtotal += 75;
+    breakdown.push('Mattress Shampoo: $75.00');
+  }
+
+  if (config.headDeepClean) {
+    subtotal += 75;
+    breakdown.push('Head Deep Clean: $75.00');
+  }
+
+  if (config.galleyDeepClean) {
+    subtotal += 100;
+    breakdown.push('Galley Deep Clean: $100.00');
+  }
+
+  if (config.petHairRemoval) {
+    subtotal += 100;
+    breakdown.push('Pet Hair Removal: $100.00');
+  }
+
+  if (config.ozoneInterior) {
+    subtotal += 100;
+    breakdown.push('Ozone Interior: $100.00');
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateCeramic(length: number, config: CeramicConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const basePrice = length * 35;
+  breakdown.push(`Ceramic Coating: ${length}ft × $35/ft = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.secondLayer) {
+    const secondLayerCost = length * 8;
+    subtotal += secondLayerCost;
+    breakdown.push(`Second Layer: ${length}ft × $8/ft = $${secondLayerCost.toFixed(2)}`);
+  }
+
+  if (config.teakCeramic) {
+    subtotal += 300;
+    breakdown.push('Teak Ceramic: $300.00');
+  }
+
+  if (config.interiorCeramic) {
+    subtotal += 150;
+    breakdown.push('Interior Ceramic: $150.00');
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateGraphene(length: number, config: GrapheneConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const basePrice = length * 40;
+  breakdown.push(`Graphene Coating: ${length}ft × $40/ft = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.secondLayer) {
+    const secondLayerCost = length * 10;
+    subtotal += secondLayerCost;
+    breakdown.push(`Second Layer: ${length}ft × $10/ft = $${secondLayerCost.toFixed(2)}`);
+  }
+
+  if (config.teakGraphene) {
+    subtotal += 350;
+    breakdown.push('Teak Graphene: $350.00');
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateWetSanding(length: number, config: WetSandingConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const basePrice = length * 45;
+  breakdown.push(`Wet Sanding & Paint/Gelcoat Correction: ${length}ft × $45/ft = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.deepScratchRepair) {
+    subtotal += 275;
+    breakdown.push('Deep Scratch Repair: $275.00');
+  }
+
+  if (config.spotWetSanding > 0) {
+    const sandingCost = config.spotWetSanding * 125;
+    subtotal += sandingCost;
+    breakdown.push(`Spot Wet Sanding (${config.spotWetSanding} areas): $${sandingCost.toFixed(2)}`);
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateBottomPainting(length: number, config: BottomPaintingConfig): PricingResult {
+  const breakdown: string[] = [];
+  const reviewReasons: string[] = [];
+  let subtotal = 0;
+
+  const basePrice = length * 30;
+  breakdown.push(`Bottom Painting: ${length}ft × $30/ft = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.secondCoat) {
+    const secondCoatCost = length * 12;
+    subtotal += secondCoatCost;
+    breakdown.push(`2nd Coat: ${length}ft × $12/ft = $${secondCoatCost.toFixed(2)}`);
+  }
+
+  if (config.oldPaintRemoval) {
+    const removalCost = length * 18;
+    subtotal += removalCost;
+    breakdown.push(`Old Paint Removal: ${length}ft × $18/ft = $${removalCost.toFixed(2)}`);
+  }
+
+  if (config.heavyGrowthRemoval) {
+    subtotal += 250;
+    breakdown.push('Heavy Growth Removal: $250.00');
+  }
+
+  if (config.blisterRepair) {
+    reviewReasons.push('Blister repair requires manual review');
+  }
+
+  return {
+    subtotal,
+    breakdown,
+    requiresManualReview: config.blisterRepair,
+    reviewReasons
+  };
+}
+
+export function calculateVinyl(length: number, config: VinylConfig): PricingResult {
+  const breakdown: string[] = [];
+  let subtotal = 0;
+
+  const rates = {
+    removal: 12,
+    install: 15,
+    both: 24
+  };
+
+  const basePrice = length * rates[config.service];
+  const serviceName = config.service === 'both' ? 'Removal + Install' : 
+                      config.service === 'removal' ? 'Removal Only' : 'Install Only';
+  
+  breakdown.push(`Vinyl ${serviceName}: ${length}ft × $${rates[config.service]}/ft = $${basePrice.toFixed(2)}`);
+  subtotal = basePrice;
+
+  if (config.customDesign) {
+    subtotal += 125;
+    breakdown.push('Custom Design: $125.00');
+  }
+
+  return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
+}
+
+export function calculateTotal(length: number, services: ServiceSelections): PricingResult {
+  let grandTotal = 0;
+  const allBreakdown: string[] = [];
+  const allReviewReasons: string[] = [];
+  let requiresReview = false;
+
+  if (services.gelcoat) {
+    const result = calculateGelcoat(length, services.gelcoat);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Gelcoat Restoration ---', ...result.breakdown);
+    if (result.requiresManualReview) {
+      requiresReview = true;
+      allReviewReasons.push(...result.reviewReasons);
+    }
+  }
+
+  if (services.exterior) {
+    const result = calculateExterior(length, services.exterior);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Exterior Detailing ---', ...result.breakdown);
+  }
+
+  if (services.interior) {
+    const result = calculateInterior(length, services.interior);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Interior Detailing ---', ...result.breakdown);
+  }
+
+  if (services.ceramic) {
+    const result = calculateCeramic(length, services.ceramic);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Ceramic Coating ---', ...result.breakdown);
+  }
+
+  if (services.graphene) {
+    const result = calculateGraphene(length, services.graphene);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Graphene Coating ---', ...result.breakdown);
+  }
+
+  if (services.wetSanding) {
+    const result = calculateWetSanding(length, services.wetSanding);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Wet Sanding & Paint/Gelcoat Correction ---', ...result.breakdown);
+  }
+
+  if (services.bottomPainting) {
+    const result = calculateBottomPainting(length, services.bottomPainting);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Bottom Painting ---', ...result.breakdown);
+    if (result.requiresManualReview) {
+      requiresReview = true;
+      allReviewReasons.push(...result.reviewReasons);
+    }
+  }
+
+  if (services.vinyl) {
+    const result = calculateVinyl(length, services.vinyl);
+    grandTotal += result.subtotal;
+    allBreakdown.push('--- Vinyl Services ---', ...result.breakdown);
+  }
+
+  return {
+    subtotal: grandTotal,
+    breakdown: allBreakdown,
+    requiresManualReview: requiresReview,
+    reviewReasons: allReviewReasons
+  };
+}
