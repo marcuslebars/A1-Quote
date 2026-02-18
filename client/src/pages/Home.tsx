@@ -147,17 +147,11 @@ export default function Home() {
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img 
-                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" 
-                alt="A1 Marine Care" 
-                className="h-12 w-auto"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">A1 Marine Care</h1>
-                <p className="text-sm text-muted-foreground">Instant Quote System</p>
-              </div>
-            </div>
+            <img 
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" 
+              alt="A1 Marine Care" 
+              className="h-16 w-auto"
+            />
             <a 
               href="https://a1marinecare.ca" 
               className="text-primary hover:text-primary/80 transition-colors font-medium"
