@@ -146,14 +146,24 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container py-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Ship className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" 
+                alt="A1 Marine Care" 
+                className="h-12 w-auto"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">A1 Marine Care</h1>
+                <p className="text-sm text-muted-foreground">Instant Quote System</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">A1 Marine Care</h1>
-              <p className="text-sm text-muted-foreground">Instant Quote System</p>
-            </div>
+            <a 
+              href="https://a1marinecare.ca" 
+              className="text-primary hover:text-primary/80 transition-colors font-medium"
+            >
+              Back to Home
+            </a>
           </div>
         </div>
       </header>
@@ -775,7 +785,7 @@ export default function Home() {
                     size="lg"
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
                   >
-                    <a href="https://buy.stripe.com/4gM3cvetybh54ao8ww" target="_blank" rel="noopener noreferrer">
+                    <a href="https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01" target="_blank" rel="noopener noreferrer">
                       Pay $250 Deposit
                     </a>
                   </Button>
