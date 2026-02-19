@@ -818,9 +818,22 @@ export default function Home() {
 
                 {/* Pay Deposit Button or Manual Review Message */}
                 {estimate.requiresManualReview ? (
-                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                    <p className="text-foreground font-semibold">Your interior estimate requires review.</p>
-                    <p className="text-sm text-muted-foreground mt-1">We will confirm pricing within 24–48 hours.</p>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                      <p className="text-foreground font-semibold">Your interior estimate requires review.</p>
+                      <p className="text-sm text-muted-foreground mt-1">We will confirm pricing within 24–48 hours.</p>
+                    </div>
+                    {hasRequiredFields && (
+                      <Button
+                        asChild
+                        size="lg"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
+                      >
+                        <a href="https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01" target="_blank" rel="noopener noreferrer">
+                          Submit for Manual Review ($250 Deposit)
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 ) : canPayDeposit && (
                   <Button
