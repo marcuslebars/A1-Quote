@@ -152,7 +152,7 @@ export default function Home() {
             <img 
               src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" 
               alt="A1 Marine Care" 
-              className="h-16 w-auto"
+              className="h-24 w-auto"
             />
             <a 
               href="https://a1marinecare.ca" 
@@ -170,7 +170,7 @@ export default function Home() {
           <div className="text-center space-y-4 pb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
               <Waves className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Professional Marine Detailing</span>
+              <span className="text-sm font-medium text-primary">A1 Service. A1 Results.</span>
             </div>
             <h2 className="text-4xl font-bold text-foreground">Get Your Instant Quote</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -844,7 +844,7 @@ export default function Home() {
         <div className="container py-8">
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              © 2026 A1 Marine Care. Premium boat detailing services.
+              © 2026 A1 Marine Care.
             </p>
             <p className="text-xs text-muted-foreground">
               After payment, you'll be redirected to schedule your service appointment.
