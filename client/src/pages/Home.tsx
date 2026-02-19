@@ -92,7 +92,9 @@ export default function Home() {
     headDeepClean: false,
     galleyDeepClean: false,
     petHairRemoval: false,
-    ozoneInterior: false
+    ozoneInterior: false,
+    photos: [],
+    photoConfirmation: false
   });
 
   const [ceramicConfig, setCeramicConfig] = useState<CeramicConfig>({
@@ -134,7 +136,7 @@ export default function Home() {
   if (selectedServices.bottomPainting) services.bottomPainting = bottomPaintingConfig;
   if (selectedServices.vinyl) services.vinyl = vinylConfig;
 
-  const estimate = boatDetails.length > 0 ? calculateTotal(boatDetails.length, services) : null;
+  const estimate = boatDetails.length > 0 ? calculateTotal(boatDetails.length, boatDetails.type, services) : null;
 
   const hasSelectedServices = Object.values(selectedServices).some(v => v);
   const hasRequiredFields = boatDetails.length > 0 && boatDetails.type && boatDetails.location && 
@@ -447,54 +449,88 @@ export default function Home() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="moldRemediation"
-                          checked={interiorConfig.moldRemediation}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, moldRemediation: checked as boolean })}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-foreground font-medium">Upload Interior Photos (Minimum 3 Required) *</Label>
+                        <Input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          multiple
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length > 10) {
+                              alert('Maximum 10 photos allowed');
+                              return;
+                            }
+                            setInteriorConfig({ ...interiorConfig, photos: files });
+                          }}
+                          className="bg-input border-border text-foreground"
                         />
-                        <Label htmlFor="moldRemediation" className="text-sm text-foreground cursor-pointer">Mold Remediation (+$225)</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {interiorConfig.photos.length} photo(s) uploaded (min: 3, max: 10)
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      
+                      <div className="flex items-start space-x-2">
                         <Checkbox
-                          id="mattressShampoo"
-                          checked={interiorConfig.mattressShampoo}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, mattressShampoo: checked as boolean })}
+                          id="photoConfirmation"
+                          checked={interiorConfig.photoConfirmation}
+                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, photoConfirmation: checked as boolean })}
                         />
-                        <Label htmlFor="mattressShampoo" className="text-sm text-foreground cursor-pointer">Mattress Shampoo (+$75)</Label>
+                        <Label htmlFor="photoConfirmation" className="text-sm text-foreground cursor-pointer leading-tight">
+                          I confirm these photos accurately represent the current condition of the boat interior. *
+                        </Label>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="headDeepClean"
-                          checked={interiorConfig.headDeepClean}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, headDeepClean: checked as boolean })}
-                        />
-                        <Label htmlFor="headDeepClean" className="text-sm text-foreground cursor-pointer">Head Deep Clean (+$75)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="galleyDeepClean"
-                          checked={interiorConfig.galleyDeepClean}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, galleyDeepClean: checked as boolean })}
-                        />
-                        <Label htmlFor="galleyDeepClean" className="text-sm text-foreground cursor-pointer">Galley Deep Clean (+$100)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="petHairRemoval"
-                          checked={interiorConfig.petHairRemoval}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, petHairRemoval: checked as boolean })}
-                        />
-                        <Label htmlFor="petHairRemoval" className="text-sm text-foreground cursor-pointer">Pet Hair Removal (+$100)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="ozoneInterior"
-                          checked={interiorConfig.ozoneInterior}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, ozoneInterior: checked as boolean })}
-                        />
-                        <Label htmlFor="ozoneInterior" className="text-sm text-foreground cursor-pointer">Ozone Interior (+$100)</Label>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="moldRemediation"
+                            checked={interiorConfig.moldRemediation}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, moldRemediation: checked as boolean })}
+                          />
+                          <Label htmlFor="moldRemediation" className="text-sm text-foreground cursor-pointer">Mold Remediation (+$225)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="mattressShampoo"
+                            checked={interiorConfig.mattressShampoo}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, mattressShampoo: checked as boolean })}
+                          />
+                          <Label htmlFor="mattressShampoo" className="text-sm text-foreground cursor-pointer">Mattress Shampoo (+$75)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="headDeepClean"
+                            checked={interiorConfig.headDeepClean}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, headDeepClean: checked as boolean })}
+                          />
+                          <Label htmlFor="headDeepClean" className="text-sm text-foreground cursor-pointer">Head Deep Clean (+$75)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="galleyDeepClean"
+                            checked={interiorConfig.galleyDeepClean}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, galleyDeepClean: checked as boolean })}
+                          />
+                          <Label htmlFor="galleyDeepClean" className="text-sm text-foreground cursor-pointer">Galley Deep Clean (+$100)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="petHairRemoval"
+                            checked={interiorConfig.petHairRemoval}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, petHairRemoval: checked as boolean })}
+                          />
+                          <Label htmlFor="petHairRemoval" className="text-sm text-foreground cursor-pointer">Pet Hair Removal (+$100)</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="ozoneInterior"
+                            checked={interiorConfig.ozoneInterior}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, ozoneInterior: checked as boolean })}
+                          />
+                          <Label htmlFor="ozoneInterior" className="text-sm text-foreground cursor-pointer">Ozone Interior (+$100)</Label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -724,7 +760,7 @@ export default function Home() {
           </Card>
 
           {/* Estimate Display */}
-          {estimate && estimate.subtotal > 0 && (
+          {estimate && (estimate.subtotal > 0 || estimate.requiresManualReview) && (
             <Card className="bg-card border-primary/30 shadow-lg shadow-primary/5">
               <CardHeader>
                 <CardTitle className="text-foreground text-2xl">Your Estimate</CardTitle>
@@ -740,40 +776,49 @@ export default function Home() {
                 )}
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-muted-foreground">Estimated Total:</span>
-                    <span className="text-4xl font-bold text-primary">${estimate.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
-                    <span className="text-muted-foreground">Deposit Required:</span>
-                    <span className="text-2xl font-semibold text-foreground">$250.00</span>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-lg bg-background/50 border border-border/30">
-                  <p className="text-sm text-muted-foreground">
-                    To secure your service appointment, a refundable <span className="text-foreground font-medium">$250 deposit</span> is required. 
-                    This deposit is applied toward your final invoice.
-                  </p>
-                </div>
-
-                {/* Price Breakdown */}
-                {estimate.breakdown.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-foreground">Price Breakdown</h4>
-                    <div className="p-4 rounded-lg bg-background/50 border border-border/30 space-y-1 max-h-64 overflow-y-auto">
-                      {estimate.breakdown.map((line, i) => (
-                        <p key={i} className={`text-sm ${line.startsWith('---') ? 'font-semibold text-primary mt-3 first:mt-0' : 'text-muted-foreground'}`}>
-                          {line}
-                        </p>
-                      ))}
+                {!estimate.requiresManualReview && (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-muted-foreground">Estimated Total:</span>
+                        <span className="text-4xl font-bold text-primary">${estimate.subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
+                        <span className="text-muted-foreground">Deposit Required:</span>
+                        <span className="text-2xl font-semibold text-foreground">$250.00</span>
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="p-4 rounded-lg bg-background/50 border border-border/30">
+                      <p className="text-sm text-muted-foreground">
+                        To secure your service appointment, a refundable <span className="text-foreground font-medium">$250 deposit</span> is required. 
+                        This deposit is applied toward your final invoice.
+                      </p>
+                    </div>
+
+                    {/* Price Breakdown */}
+                    {estimate.breakdown.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">Price Breakdown</h4>
+                        <div className="p-4 rounded-lg bg-background/50 border border-border/30 space-y-1 max-h-64 overflow-y-auto">
+                          {estimate.breakdown.map((line, i) => (
+                            <p key={i} className={`text-sm ${line.startsWith('---') ? 'font-semibold text-primary mt-3 first:mt-0' : 'text-muted-foreground'}`}>
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
-                {/* Pay Deposit Button */}
-                {canPayDeposit && (
+                {/* Pay Deposit Button or Manual Review Message */}
+                {estimate.requiresManualReview ? (
+                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                    <p className="text-foreground font-semibold">Your interior estimate requires review.</p>
+                    <p className="text-sm text-muted-foreground mt-1">We will confirm pricing within 24–48 hours.</p>
+                  </div>
+                ) : canPayDeposit && (
                   <Button
                     asChild
                     size="lg"

@@ -39,6 +39,8 @@ export interface InteriorConfig {
   galleyDeepClean: boolean;
   petHairRemoval: boolean;
   ozoneInterior: boolean;
+  photos: File[];
+  photoConfirmation: boolean;
 }
 
 export interface CeramicConfig {
@@ -123,10 +125,18 @@ const TIER_MULTIPLIERS = {
 };
 
 const INTERIOR_TIER_MULTIPLIERS = {
-  refresh: 1.0,
-  standard: 1.25,
-  deep: 1.5,
-  restoration: 1.75
+  refresh: 0.9,
+  standard: 1.0,
+  deep: 1.25,
+  restoration: 1.6
+};
+
+const INTERIOR_BOAT_TYPE_MULTIPLIERS: Record<string, number> = {
+  'Open Bow / Bowrider': 1.0,
+  'Cuddy Cabin': 1.1,
+  'Cruiser (Single Cabin)': 1.25,
+  'Express Cruiser': 1.35,
+  'Yacht / Multi-Cabin': 1.6
 };
 
 function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider'): number {
@@ -224,16 +234,48 @@ export function calculateExterior(length: number, config: ExteriorConfig): Prici
   return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
 }
 
-export function calculateInterior(length: number, config: InteriorConfig): PricingResult {
+export function calculateInterior(length: number, boatType: string, config: InteriorConfig): PricingResult {
   const breakdown: string[] = [];
+  const reviewReasons: string[] = [];
   let subtotal = 0;
 
-  const baseRate = 18;
-  const multiplier = INTERIOR_TIER_MULTIPLIERS[config.tier];
-  const basePrice = length * baseRate * multiplier;
+  // Check manual review conditions
+  if (length > 45) {
+    reviewReasons.push('Boat over 45ft requires manual review');
+  }
   
-  breakdown.push(`Interior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)}: ${length}ft × $${baseRate}/ft × ${multiplier} = $${basePrice.toFixed(2)}`);
-  subtotal = basePrice;
+  if (config.tier === 'restoration') {
+    reviewReasons.push('Restoration tier requires manual review');
+  }
+  
+  if (boatType === 'Yacht / Multi-Cabin' && (config.tier === 'deep' || config.tier === 'restoration')) {
+    reviewReasons.push('Yacht with Deep Clean or Restoration requires manual review');
+  }
+  
+  if (config.photos.length < 3) {
+    reviewReasons.push('Minimum 3 interior photos required');
+  }
+  
+  if (!config.photoConfirmation) {
+    reviewReasons.push('Photo confirmation required');
+  }
+
+  // If manual review required, return early
+  if (reviewReasons.length > 0) {
+    return { subtotal: 0, breakdown, requiresManualReview: true, reviewReasons };
+  }
+
+  // Calculate base price with boat type multiplier
+  const baseRate = 18;
+  const tierMultiplier = INTERIOR_TIER_MULTIPLIERS[config.tier];
+  const boatTypeMultiplier = INTERIOR_BOAT_TYPE_MULTIPLIERS[boatType] || 1.0;
+  
+  const calculatedBase = length * baseRate * boatTypeMultiplier * tierMultiplier;
+  const lowEstimate = calculatedBase * 0.85;
+  const highEstimate = calculatedBase * 1.15;
+  
+  breakdown.push(`Interior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)} (${boatType}): $${lowEstimate.toFixed(0)} – $${highEstimate.toFixed(0)}`);
+  subtotal = calculatedBase;
 
   if (config.moldRemediation) {
     subtotal += 225;
@@ -402,7 +444,7 @@ export function calculateVinyl(length: number, config: VinylConfig): PricingResu
   return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
 }
 
-export function calculateTotal(length: number, services: ServiceSelections): PricingResult {
+export function calculateTotal(length: number, boatType: string, services: ServiceSelections): PricingResult {
   let grandTotal = 0;
   const allBreakdown: string[] = [];
   const allReviewReasons: string[] = [];
@@ -425,9 +467,13 @@ export function calculateTotal(length: number, services: ServiceSelections): Pri
   }
 
   if (services.interior) {
-    const result = calculateInterior(length, services.interior);
+    const result = calculateInterior(length, boatType, services.interior);
     grandTotal += result.subtotal;
     allBreakdown.push('--- Interior Detailing ---', ...result.breakdown);
+    if (result.requiresManualReview) {
+      requiresReview = true;
+      allReviewReasons.push(...result.reviewReasons);
+    }
   }
 
   if (services.ceramic) {
