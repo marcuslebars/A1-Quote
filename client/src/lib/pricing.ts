@@ -139,6 +139,21 @@ const INTERIOR_BOAT_TYPE_MULTIPLIERS: Record<string, number> = {
   'Yacht / Multi-Cabin': 1.6
 };
 
+// Map form values to display names
+function getBoatTypeDisplayName(shortValue: string): string {
+  const mapping: Record<string, string> = {
+    'bowrider': 'Open Bow / Bowrider',
+    'cuddy': 'Cuddy Cabin',
+    'cruiser': 'Cruiser (Single Cabin)',
+    'express': 'Express Cruiser',
+    'yacht': 'Yacht / Multi-Cabin',
+    'sailboat': 'Sailboat',
+    'pontoon': 'Pontoon',
+    'other': 'Other'
+  };
+  return mapping[shortValue.toLowerCase()] || shortValue;
+}
+
 function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider'): number {
   const rates = GELCOAT_RATES[area];
   for (const tier of rates) {
@@ -239,6 +254,9 @@ export function calculateInterior(length: number, boatType: string, config: Inte
   const reviewReasons: string[] = [];
   let subtotal = 0;
 
+  // Convert short boat type to display name
+  const boatTypeDisplay = getBoatTypeDisplayName(boatType);
+
   // Check manual review conditions
   if (length > 45) {
     reviewReasons.push('Boat over 45ft requires manual review');
@@ -248,7 +266,7 @@ export function calculateInterior(length: number, boatType: string, config: Inte
     reviewReasons.push('Restoration tier requires manual review');
   }
   
-  if (boatType === 'Yacht / Multi-Cabin' && (config.tier === 'deep' || config.tier === 'restoration')) {
+  if (boatTypeDisplay === 'Yacht / Multi-Cabin' && (config.tier === 'deep' || config.tier === 'restoration')) {
     reviewReasons.push('Yacht with Deep Clean or Restoration requires manual review');
   }
   
@@ -268,44 +286,51 @@ export function calculateInterior(length: number, boatType: string, config: Inte
   // Calculate base price with boat type multiplier
   const baseRate = 18;
   const tierMultiplier = INTERIOR_TIER_MULTIPLIERS[config.tier];
-  const boatTypeMultiplier = INTERIOR_BOAT_TYPE_MULTIPLIERS[boatType] || 1.0;
+  const boatTypeMultiplier = INTERIOR_BOAT_TYPE_MULTIPLIERS[boatTypeDisplay] || 1.0;
   
   const calculatedBase = length * baseRate * boatTypeMultiplier * tierMultiplier;
-  const lowEstimate = calculatedBase * 0.85;
-  const highEstimate = calculatedBase * 1.15;
   
-  breakdown.push(`Interior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)} (${boatType}): $${lowEstimate.toFixed(0)} – $${highEstimate.toFixed(0)}`);
-  subtotal = calculatedBase;
-
+  // Calculate add-ons total
+  let interiorAddOnsTotal = 0;
+  
   if (config.moldRemediation) {
-    subtotal += 225;
-    breakdown.push('Mold Remediation: $225.00');
-  }
-
-  if (config.mattressShampoo) {
-    subtotal += 75;
-    breakdown.push('Mattress Shampoo: $75.00');
-  }
-
-  if (config.headDeepClean) {
-    subtotal += 75;
-    breakdown.push('Head Deep Clean: $75.00');
-  }
-
-  if (config.galleyDeepClean) {
-    subtotal += 100;
-    breakdown.push('Galley Deep Clean: $100.00');
+    interiorAddOnsTotal += 295;
+    breakdown.push('Advanced Mold & Mildew Remediation: $295.00');
   }
 
   if (config.petHairRemoval) {
-    subtotal += 100;
-    breakdown.push('Pet Hair Removal: $100.00');
+    interiorAddOnsTotal += 150;
+    breakdown.push('Heavy Pet Hair Removal: $150.00');
+  }
+
+  if (config.mattressShampoo) {
+    interiorAddOnsTotal += 175;
+    breakdown.push('Cabin Mattress / Cushion Shampoo: $175.00');
+  }
+
+  if (config.headDeepClean) {
+    interiorAddOnsTotal += 125;
+    breakdown.push('Head (Bathroom) Deep Clean: $125.00');
+  }
+
+  if (config.galleyDeepClean) {
+    interiorAddOnsTotal += 175;
+    breakdown.push('Galley Deep Clean: $175.00');
   }
 
   if (config.ozoneInterior) {
-    subtotal += 100;
-    breakdown.push('Ozone Interior: $100.00');
+    interiorAddOnsTotal += 195;
+    breakdown.push('Ozone Odor Treatment: $195.00');
   }
+  
+  // Calculate range with add-ons included
+  const lowEstimate = (calculatedBase * 0.85) + interiorAddOnsTotal;
+  const highEstimate = (calculatedBase * 1.15) + interiorAddOnsTotal;
+  
+  // Insert base range at the beginning of breakdown
+  breakdown.unshift(`Interior ${config.tier.charAt(0).toUpperCase() + config.tier.slice(1)} (${boatTypeDisplay}): $${lowEstimate.toFixed(0)} – $${highEstimate.toFixed(0)}`);
+  
+  subtotal = calculatedBase + interiorAddOnsTotal;
 
   return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
 }

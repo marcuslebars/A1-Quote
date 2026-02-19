@@ -489,31 +489,7 @@ export default function Home() {
                             checked={interiorConfig.moldRemediation}
                             onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, moldRemediation: checked as boolean })}
                           />
-                          <Label htmlFor="moldRemediation" className="text-sm text-foreground cursor-pointer">Mold Remediation (+$225)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="mattressShampoo"
-                            checked={interiorConfig.mattressShampoo}
-                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, mattressShampoo: checked as boolean })}
-                          />
-                          <Label htmlFor="mattressShampoo" className="text-sm text-foreground cursor-pointer">Mattress Shampoo (+$75)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="headDeepClean"
-                            checked={interiorConfig.headDeepClean}
-                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, headDeepClean: checked as boolean })}
-                          />
-                          <Label htmlFor="headDeepClean" className="text-sm text-foreground cursor-pointer">Head Deep Clean (+$75)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="galleyDeepClean"
-                            checked={interiorConfig.galleyDeepClean}
-                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, galleyDeepClean: checked as boolean })}
-                          />
-                          <Label htmlFor="galleyDeepClean" className="text-sm text-foreground cursor-pointer">Galley Deep Clean (+$100)</Label>
+                          <Label htmlFor="moldRemediation" className="text-sm text-foreground cursor-pointer">Advanced Mold & Mildew Remediation (+$295)</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -521,16 +497,44 @@ export default function Home() {
                             checked={interiorConfig.petHairRemoval}
                             onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, petHairRemoval: checked as boolean })}
                           />
-                          <Label htmlFor="petHairRemoval" className="text-sm text-foreground cursor-pointer">Pet Hair Removal (+$100)</Label>
+                          <Label htmlFor="petHairRemoval" className="text-sm text-foreground cursor-pointer">Heavy Pet Hair Removal (+$150)</Label>
+                        </div>
+                        {['cuddy', 'cruiser', 'express', 'yacht'].includes(boatDetails.type) && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="mattressShampoo"
+                              checked={interiorConfig.mattressShampoo}
+                              onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, mattressShampoo: checked as boolean })}
+                            />
+                            <Label htmlFor="mattressShampoo" className="text-sm text-foreground cursor-pointer">Cabin Mattress / Cushion Shampoo (+$175)</Label>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="headDeepClean"
+                            checked={interiorConfig.headDeepClean}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, headDeepClean: checked as boolean })}
+                          />
+                          <Label htmlFor="headDeepClean" className="text-sm text-foreground cursor-pointer">Head (Bathroom) Deep Clean (+$125)</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox
-                            id="ozoneInterior"
-                            checked={interiorConfig.ozoneInterior}
-                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, ozoneInterior: checked as boolean })}
+                            id="galleyDeepClean"
+                            checked={interiorConfig.galleyDeepClean}
+                            onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, galleyDeepClean: checked as boolean })}
                           />
-                          <Label htmlFor="ozoneInterior" className="text-sm text-foreground cursor-pointer">Ozone Interior (+$100)</Label>
+                          <Label htmlFor="galleyDeepClean" className="text-sm text-foreground cursor-pointer">Galley Deep Clean (+$175)</Label>
                         </div>
+                        {(interiorConfig.tier === 'deep' || interiorConfig.tier === 'restoration') && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="ozoneInterior"
+                              checked={interiorConfig.ozoneInterior}
+                              onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, ozoneInterior: checked as boolean })}
+                            />
+                            <Label htmlFor="ozoneInterior" className="text-sm text-foreground cursor-pointer">Ozone Odor Treatment (+$195)</Label>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
