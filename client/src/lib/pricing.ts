@@ -125,10 +125,10 @@ const TIER_MULTIPLIERS = {
 };
 
 const INTERIOR_TIER_MULTIPLIERS = {
-  refresh: 0.9,
-  standard: 1.0,
-  deep: 1.25,
-  restoration: 1.6
+  refresh: 1.0,
+  standard: 1.25,
+  deep: 1.5,
+  restoration: 1.75
 };
 
 const INTERIOR_BOAT_TYPE_MULTIPLIERS: Record<string, number> = {
