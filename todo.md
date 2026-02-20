@@ -1,7 +1,8 @@
-# A1 Marine Care Quote App - Manual Review Submission
+# A1 Marine Care Quote App - Full Boat Service
 
 ## Tasks
-- [x] Add "Submit for Manual Review" button when interior requires review
-- [x] Update button logic to show submission option alongside manual review message
-- [x] Test the submission flow with interior service requiring review
-- [ ] Save checkpoint with manual review submission feature
+- [x] Read pricing.ts to understand hull and topsides calculation
+- [x] Add Full Boat service to pricing engine (hull + topsides)
+- [x] Add Full Boat checkbox to service selection in Home.tsx
+- [x] Test Full Boat pricing calculation
+- [ ] Save checkpoint with Full Boat service feature
