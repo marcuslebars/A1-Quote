@@ -862,7 +862,7 @@ export default function Home() {
               © 2026 A1 Marine Care.
             </p>
             <p className="text-xs text-muted-foreground">
-              After payment, you'll be redirected to schedule your service appointment.
+              After making your deposit, you'll be contacted by our agent to schedule your service date and time.
             </p>
           </div>
         </div>
