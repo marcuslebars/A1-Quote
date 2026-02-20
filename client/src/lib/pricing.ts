@@ -16,7 +16,7 @@ export interface ContactInfo {
 }
 
 export interface GelcoatConfig {
-  area: 'hull' | 'topsides' | 'bowrider';
+  area: 'hull' | 'topsides' | 'bowrider' | 'fullboat';
   radarArch: boolean;
   hardTop: boolean;
   spotWetSanding: number; // number of areas
@@ -71,13 +71,6 @@ export interface VinylConfig {
   customDesign: boolean;
 }
 
-export interface FullBoatConfig {
-  radarArch: boolean;
-  hardTop: boolean;
-  spotWetSanding: number;
-  heavyOxidation: boolean;
-}
-
 export interface ServiceSelections {
   gelcoat?: GelcoatConfig;
   exterior?: ExteriorConfig;
@@ -87,7 +80,6 @@ export interface ServiceSelections {
   wetSanding?: WetSandingConfig;
   bottomPainting?: BottomPaintingConfig;
   vinyl?: VinylConfig;
-  fullBoat?: FullBoatConfig;
 }
 
 export interface PricingResult {
@@ -162,8 +154,10 @@ function getBoatTypeDisplayName(shortValue: string): string {
   return mapping[shortValue.toLowerCase()] || shortValue;
 }
 
-function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider'): number {
-  const rates = GELCOAT_RATES[area];
+function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider' | 'fullboat'): number {
+  // For fullboat, we'll use hull rates (calculation will sum hull + topsides separately)
+  const rateArea = area === 'fullboat' ? 'hull' : area;
+  const rates = GELCOAT_RATES[rateArea];
   for (const tier of rates) {
     if (length <= tier.max) {
       return tier.rate;
@@ -177,8 +171,6 @@ export function calculateGelcoat(length: number, config: GelcoatConfig): Pricing
   const reviewReasons: string[] = [];
   let subtotal = 0;
 
-  const rate = getGelcoatRate(length, config.area);
-  
   if (config.area === 'bowrider' && length > 30) {
     reviewReasons.push('Bowrider over 30ft requires manual review');
     return { subtotal: 0, breakdown, requiresManualReview: true, reviewReasons };
@@ -188,16 +180,40 @@ export function calculateGelcoat(length: number, config: GelcoatConfig): Pricing
     reviewReasons.push('Boat over 45ft requires manual review');
   }
 
-  let basePrice = length * rate;
-  breakdown.push(`${config.area.charAt(0).toUpperCase() + config.area.slice(1)}: ${length}ft × $${rate}/ft = $${basePrice.toFixed(2)}`);
+  // Handle fullboat calculation (hull + topsides)
+  if (config.area === 'fullboat') {
+    const hullRate = getGelcoatRate(length, 'hull');
+    const topsidesRate = getGelcoatRate(length, 'topsides');
+    
+    let hullPrice = length * hullRate;
+    let topsidesPrice = length * topsidesRate;
+    
+    breakdown.push(`Hull: ${length}ft × $${hullRate}/ft = $${hullPrice.toFixed(2)}`);
+    breakdown.push(`Topsides: ${length}ft × $${topsidesRate}/ft = $${topsidesPrice.toFixed(2)}`);
+    
+    if (config.heavyOxidation) {
+      const hullOxidation = hullPrice * 0.2;
+      const topsidesOxidation = topsidesPrice * 0.2;
+      breakdown.push(`Heavy Oxidation (+20%): $${(hullOxidation + topsidesOxidation).toFixed(2)}`);
+      hullPrice += hullOxidation;
+      topsidesPrice += topsidesOxidation;
+    }
+    
+    subtotal = hullPrice + topsidesPrice;
+  } else {
+    // Handle single area (hull, topsides, or bowrider)
+    const rate = getGelcoatRate(length, config.area);
+    let basePrice = length * rate;
+    breakdown.push(`${config.area.charAt(0).toUpperCase() + config.area.slice(1)}: ${length}ft × $${rate}/ft = $${basePrice.toFixed(2)}`);
 
-  if (config.heavyOxidation) {
-    const oxidationCharge = basePrice * 0.2;
-    breakdown.push(`Heavy Oxidation (+20%): $${oxidationCharge.toFixed(2)}`);
-    basePrice += oxidationCharge;
+    if (config.heavyOxidation) {
+      const oxidationCharge = basePrice * 0.2;
+      breakdown.push(`Heavy Oxidation (+20%): $${oxidationCharge.toFixed(2)}`);
+      basePrice += oxidationCharge;
+    }
+
+    subtotal = basePrice;
   }
-
-  subtotal = basePrice;
 
   if (config.radarArch) {
     subtotal += 175;
@@ -477,61 +493,6 @@ export function calculateVinyl(length: number, config: VinylConfig): PricingResu
   return { subtotal, breakdown, requiresManualReview: false, reviewReasons: [] };
 }
 
-export function calculateFullBoat(length: number, config: FullBoatConfig): PricingResult {
-  const breakdown: string[] = [];
-  const reviewReasons: string[] = [];
-  let subtotal = 0;
-
-  if (length > 45) {
-    reviewReasons.push('Boat over 45ft requires manual review');
-  }
-
-  // Calculate hull price
-  const hullRate = getGelcoatRate(length, 'hull');
-  let hullPrice = length * hullRate;
-  breakdown.push(`Hull: ${length}ft × $${hullRate}/ft = $${hullPrice.toFixed(2)}`);
-
-  // Calculate topsides price
-  const topsidesRate = getGelcoatRate(length, 'topsides');
-  let topsidesPrice = length * topsidesRate;
-  breakdown.push(`Topsides: ${length}ft × $${topsidesRate}/ft = $${topsidesPrice.toFixed(2)}`);
-
-  // Apply heavy oxidation to both if selected
-  if (config.heavyOxidation) {
-    const hullOxidation = hullPrice * 0.2;
-    const topsidesOxidation = topsidesPrice * 0.2;
-    breakdown.push(`Heavy Oxidation (+20%): $${(hullOxidation + topsidesOxidation).toFixed(2)}`);
-    hullPrice += hullOxidation;
-    topsidesPrice += topsidesOxidation;
-  }
-
-  subtotal = hullPrice + topsidesPrice;
-
-  // Add-ons
-  if (config.radarArch) {
-    subtotal += 175;
-    breakdown.push('Radar Arch: $175.00');
-  }
-
-  if (config.hardTop) {
-    subtotal += 475;
-    breakdown.push('Hard Top: $475.00');
-  }
-
-  if (config.spotWetSanding > 0) {
-    const sandingCost = config.spotWetSanding * 125;
-    subtotal += sandingCost;
-    breakdown.push(`Spot Wet Sanding (${config.spotWetSanding} areas): $${sandingCost.toFixed(2)}`);
-  }
-
-  return {
-    subtotal,
-    breakdown,
-    requiresManualReview: reviewReasons.length > 0,
-    reviewReasons
-  };
-}
-
 export function calculateTotal(length: number, boatType: string, services: ServiceSelections): PricingResult {
   let grandTotal = 0;
   const allBreakdown: string[] = [];
@@ -596,16 +557,6 @@ export function calculateTotal(length: number, boatType: string, services: Servi
     const result = calculateVinyl(length, services.vinyl);
     grandTotal += result.subtotal;
     allBreakdown.push('--- Vinyl Services ---', ...result.breakdown);
-  }
-
-  if (services.fullBoat) {
-    const result = calculateFullBoat(length, services.fullBoat);
-    grandTotal += result.subtotal;
-    allBreakdown.push('--- Full Boat (Hull + Topsides) ---', ...result.breakdown);
-    if (result.requiresManualReview) {
-      requiresReview = true;
-      allReviewReasons.push(...result.reviewReasons);
-    }
   }
 
   return {

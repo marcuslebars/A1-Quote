@@ -22,7 +22,6 @@ import {
   CeramicConfig,
   ContactInfo,
   ExteriorConfig,
-  FullBoatConfig,
   GelcoatConfig,
   GrapheneConfig,
   InteriorConfig,
@@ -58,7 +57,6 @@ export default function Home() {
     wetSanding: boolean;
     bottomPainting: boolean;
     vinyl: boolean;
-    fullBoat: boolean;
   }>({
     gelcoat: false,
     exterior: false,
@@ -67,8 +65,7 @@ export default function Home() {
     graphene: false,
     wetSanding: false,
     bottomPainting: false,
-    vinyl: false,
-    fullBoat: false
+    vinyl: false
   });
 
   // Service configurations
@@ -128,13 +125,6 @@ export default function Home() {
     customDesign: false
   });
 
-  const [fullBoatConfig, setFullBoatConfig] = useState<FullBoatConfig>({
-    radarArch: false,
-    hardTop: false,
-    spotWetSanding: 0,
-    heavyOxidation: false
-  });
-
   // Calculate total
   const services: ServiceSelections = {};
   if (selectedServices.gelcoat) services.gelcoat = gelcoatConfig;
@@ -145,7 +135,6 @@ export default function Home() {
   if (selectedServices.wetSanding) services.wetSanding = wetSandingConfig;
   if (selectedServices.bottomPainting) services.bottomPainting = bottomPaintingConfig;
   if (selectedServices.vinyl) services.vinyl = vinylConfig;
-  if (selectedServices.fullBoat) services.fullBoat = fullBoatConfig;
 
   const estimate = boatDetails.length > 0 ? calculateTotal(boatDetails.length, boatDetails.type, services) : null;
 
@@ -316,6 +305,7 @@ export default function Home() {
                           <SelectItem value="hull">Hull (Below Rub Rail)</SelectItem>
                           <SelectItem value="topsides">Topsides</SelectItem>
                           <SelectItem value="bowrider">Bowrider Special (Low Gelcoat Only)</SelectItem>
+                          <SelectItem value="fullboat">Full Boat (Hull + Topsides)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -772,59 +762,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Full Boat Service */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="fullBoat"
-                    checked={selectedServices.fullBoat}
-                    onCheckedChange={(checked) => setSelectedServices({ ...selectedServices, fullBoat: checked as boolean })}
-                  />
-                  <Label htmlFor="fullBoat" className="text-foreground font-semibold cursor-pointer">
-                    Full Boat (Hull + Topsides)
-                  </Label>
-                </div>
-                {selectedServices.fullBoat && (
-                  <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="fullBoatHeavyOxidation"
-                        checked={fullBoatConfig.heavyOxidation}
-                        onCheckedChange={(checked) => setFullBoatConfig({ ...fullBoatConfig, heavyOxidation: checked as boolean })}
-                      />
-                      <Label htmlFor="fullBoatHeavyOxidation" className="text-sm text-foreground cursor-pointer">Heavy Oxidation (+20%)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="fullBoatRadarArch"
-                        checked={fullBoatConfig.radarArch}
-                        onCheckedChange={(checked) => setFullBoatConfig({ ...fullBoatConfig, radarArch: checked as boolean })}
-                      />
-                      <Label htmlFor="fullBoatRadarArch" className="text-sm text-foreground cursor-pointer">Radar Arch (+$175)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="fullBoatHardTop"
-                        checked={fullBoatConfig.hardTop}
-                        onCheckedChange={(checked) => setFullBoatConfig({ ...fullBoatConfig, hardTop: checked as boolean })}
-                      />
-                      <Label htmlFor="fullBoatHardTop" className="text-sm text-foreground cursor-pointer">Hard Top (+$475)</Label>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-foreground">Spot Wet Sanding Areas</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={fullBoatConfig.spotWetSanding}
-                        onChange={(e) => setFullBoatConfig({ ...fullBoatConfig, spotWetSanding: parseInt(e.target.value) || 0 })}
-                        className="bg-input border-border text-foreground"
-                        placeholder="0"
-                      />
-                      <p className="text-xs text-muted-foreground">$125 per area</p>
-                    </div>
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
 
