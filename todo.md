@@ -1,16 +1,16 @@
-# Vercel Deployment Fix
+# Fix Vercel Deployment - Exclude Server Code
 
-## Phase 1: Create Vercel Configuration
-- [x] Create vercel.json configuration file
-- [x] Add proper build settings
-- [x] Configure SPA routing rewrites
-- [x] Test configuration
+## Phase 1: Update Configuration
+- [x] Update vercel.json to use correct framework preset
+- [x] Add .vercelignore to exclude server directory
+- [x] Update package.json build script if needed
+- [x] Verify build outputs only static files
 
-## Phase 2: Document Deployment
-- [x] Create Vercel deployment guide
-- [x] Document build command and output directory
-- [x] Provide troubleshooting tips
+## Phase 2: Test Build
+- [x] Run production build locally
+- [x] Verify dist/public contains all static files
+- [x] Check that server code is not included in build
 
 ## Phase 3: Delivery
-- [x] Save checkpoint with Vercel configuration
-- [x] Deliver deployment fix to user
+- [ ] Commit and push changes
+- [ ] Provide deployment instructions
