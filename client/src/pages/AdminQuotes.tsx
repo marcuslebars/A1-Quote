@@ -116,12 +116,24 @@ export default function AdminQuotes() {
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Quote Management</h1>
-              <p className="text-muted-foreground mt-1">View and manage all customer quote submissions</p>
+            <div className="flex items-center gap-4">
+              <img 
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" 
+                alt="A1 Marine Care" 
+                className="h-16 w-auto"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+                <p className="text-muted-foreground text-sm">Quote Management System</p>
+              </div>
             </div>
-            <a href="/" className="text-primary hover:text-primary/80 transition-colors font-medium">
-              Back to Quote Form
+            <a 
+              href="https://a1marinecare.ca" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+            >
+              Visit Main Site →
             </a>
           </div>
         </div>

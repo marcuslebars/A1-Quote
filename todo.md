@@ -82,3 +82,12 @@
 - [x] Add search by customer name/email
 - [x] Test admin dashboard functionality (8/8 unit tests passing)
 - [x] Update navigation to include admin link (direct URL access)
+
+
+## Admin Deployment Setup (New Request)
+- [x] Modify App.tsx to redirect `/` to `/admin/quotes`
+- [x] Remove quote form route from admin deployment
+- [x] Update header branding for admin interface (logo + "Admin Dashboard")
+- [x] Test admin deployment routing (homepage redirects correctly)
+- [ ] Save checkpoint for admin deployment
+- [ ] Provide DNS and deployment instructions
