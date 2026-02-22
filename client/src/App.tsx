@@ -1,36 +1,20 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Route, Switch, Redirect } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import AdminQuotes from "@/pages/AdminQuotes";
-import NotFound from "@/pages/NotFound";
+import { Route, Switch } from "wouter";
+import Home from "@/pages/Home";
 
-function Router() {
-  // Admin deployment: redirect homepage to admin dashboard
+export default function App() {
   return (
     <Switch>
-      <Route path="/">
-        <Redirect to="/admin/quotes" />
+      <Route path="/" component={Home} />
+      <Route>
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
+            <a href="/" className="text-primary hover:underline">
+              Return to Quote Form
+            </a>
+          </div>
+        </div>
       </Route>
-      <Route path="/admin/quotes" component={AdminQuotes} />
-      <Route path="/404" component={NotFound} />
-      <Route component={NotFound} />
     </Switch>
   );
 }
-
-function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
-
-export default App;

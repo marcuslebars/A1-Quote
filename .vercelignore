@@ -1,5 +1,0 @@
-server/
-*.log
-.manus-logs/
-node_modules/
-.git/

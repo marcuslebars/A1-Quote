@@ -8,7 +8,7 @@
  * - Generous spacing and subtle borders
  */
 
-import { useAuth } from "@/_core/hooks/useAuth";
+// Authentication not needed for public quote form
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,9 +35,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  let { user, loading, error, isAuthenticated, logout } = useAuth();
+  // Public quote form - no authentication required
 
   // Quote submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
