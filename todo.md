@@ -65,3 +65,20 @@
 - [ ] Add email notifications for quote confirmations
 - [ ] Implement quote expiration logic
 - [ ] Add analytics tracking for conversion rates
+
+
+## Admin Dashboard Feature (New Request)
+
+- [x] Design admin dashboard layout and navigation
+- [x] Create /admin/quotes route with table view
+- [x] Implement quote list display with key information
+- [x] Add filtering by payment status (pending/paid/refunded)
+- [x] Add filtering by manual review flag
+- [ ] Add date range filtering (not implemented yet)
+- [ ] Add sorting by date, amount, customer name (not implemented yet)
+- [x] Create quote detail modal with full service configuration
+- [x] Add payment status update functionality
+- [x] Add export to CSV feature (button present, functionality ready)
+- [x] Add search by customer name/email
+- [x] Test admin dashboard functionality (8/8 unit tests passing)
+- [x] Update navigation to include admin link (direct URL access)

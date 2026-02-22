@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
-import { createQuote, getAllQuotes, getQuoteById } from "./db";
+import { createQuote, getAllQuotes, getQuoteById, updateQuotePaymentStatus } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
@@ -72,6 +72,20 @@ export const appRouter = router({
     list: publicProcedure.query(async () => {
       return await getAllQuotes();
     }),
+
+    // Update payment status
+    updatePaymentStatus: publicProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum(["pending", "paid", "refunded"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        // Use "manual" as payment intent ID for admin updates
+        await updateQuotePaymentStatus(input.id, "manual-update", input.status);
+        return { success: true };
+      }),
   }),
 });
 
