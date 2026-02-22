@@ -1,20 +1,9 @@
-/**
- * tRPC Context
- * Public quote form - no authentication required
- */
+import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import type { Context } from "./trpc";
 
-import { CreateExpressContextOptions } from "@trpc/server/adapters/express";
-
-export type TrpcContext = {
-  req: CreateExpressContextOptions["req"];
-  res: CreateExpressContextOptions["res"];
-};
-
-export async function createContext(
-  opts: CreateExpressContextOptions
-): Promise<TrpcContext> {
-  return {
-    req: opts.req,
-    res: opts.res,
-  };
+export function createContext({
+  req,
+  res,
+}: CreateExpressContextOptions): Context {
+  return { req, res };
 }

@@ -1,13 +1,13 @@
-/**
- * tRPC Setup
- * No Manus dependencies
- */
-
-import { initTRPC, TRPCError } from "@trpc/server";
-import { TrpcContext } from "./context";
+import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
+import type { Request, Response } from "express";
 
-const t = initTRPC.context<TrpcContext>().create({
+export interface Context {
+  req: Request;
+  res: Response;
+}
+
+const t = initTRPC.context<Context>().create({
   transformer: superjson,
 });
 

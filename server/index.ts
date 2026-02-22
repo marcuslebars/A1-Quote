@@ -6,12 +6,13 @@ import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 // Stripe webhook (must be before body parser)
 app.post(
@@ -33,7 +34,16 @@ app.use(
   })
 );
 
-// Serve static files in production
+// Development: Vite dev server
+if (process.env.NODE_ENV === "development") {
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: "spa",
+  });
+  app.use(vite.middlewares);
+}
+
+// Production: Serve static files
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "../client");
   app.use(express.static(clientPath));

@@ -1,20 +1,34 @@
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
-import Home from "@/pages/Home";
-
-export default function App() {
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import Home from "./pages/Home";
+import ThankYou from "./pages/ThankYou";
+function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route>
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-            <a href="/" className="text-primary hover:underline">
-              Return to Quote Form
-            </a>
-          </div>
-        </div>
-      </Route>
+      <Route path={"/"} component={Home} />
+      <Route path={"/thank-you"} component={ThankYou} />
+      <Route path={"/404"} component={NotFound} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="dark">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;
