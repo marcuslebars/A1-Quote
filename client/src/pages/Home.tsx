@@ -8,6 +8,7 @@
  * - Generous spacing and subtle borders
  */
 
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,10 +30,19 @@ import {
   VinylConfig,
   WetSandingConfig
 } from "@/lib/pricing";
-import { Anchor, Ship, Waves } from "lucide-react";
+import { Anchor, Loader2, Ship, Waves } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
+  // Quote submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitQuote = trpc.quotes.submit.useMutation();
+
   // Boat details
   const [boatDetails, setBoatDetails] = useState<BoatDetails>({
     length: 0,
@@ -827,25 +837,110 @@ export default function Home() {
                     </div>
                     {hasRequiredFields && (
                       <Button
-                        asChild
                         size="lg"
                         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
+                        disabled={isSubmitting}
+                        onClick={async () => {
+                          setIsSubmitting(true);
+                          try {
+                            // Submit quote to backend
+                            const result = await submitQuote.mutateAsync({
+                              customerName: contactInfo.fullName,
+                              customerEmail: contactInfo.email,
+                              customerPhone: contactInfo.phone,
+                              boatLength: boatDetails.length,
+                              boatType: boatDetails.type,
+                              serviceLocation: boatDetails.location,
+                              estimatedTotal: Math.round((estimate?.subtotal || 0) * 100), // convert to cents
+                              requiresManualReview: estimate?.requiresManualReview || false,
+                              reviewReasons: estimate?.reviewReasons,
+                              servicesConfig: {
+                                selectedServices,
+                                gelcoat: selectedServices.gelcoat ? gelcoatConfig : undefined,
+                                exterior: selectedServices.exterior ? exteriorConfig : undefined,
+                                interior: selectedServices.interior ? interiorConfig : undefined,
+                                ceramic: selectedServices.ceramic ? ceramicConfig : undefined,
+                                graphene: selectedServices.graphene ? grapheneConfig : undefined,
+                                wetSanding: selectedServices.wetSanding ? wetSandingConfig : undefined,
+                                bottomPainting: selectedServices.bottomPainting ? bottomPaintingConfig : undefined,
+                                vinyl: selectedServices.vinyl ? vinylConfig : undefined,
+                              },
+                            });
+                            
+                            // Store quote ID in localStorage for thank you page
+                            localStorage.setItem('lastQuoteId', result.quoteId.toString());
+                            
+                            // Redirect to Stripe payment
+                            window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                          } catch (error) {
+                            console.error('Failed to submit quote:', error);
+                            alert('Failed to submit quote. Please try again.');
+                            setIsSubmitting(false);
+                          }
+                        }}
                       >
-                        <a href="https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01" target="_blank" rel="noopener noreferrer">
-                          Submit for Manual Review ($250 Deposit)
-                        </a>
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            Submitting...
+                          </>
+                        ) : (
+                          "Submit for Manual Review ($250 Deposit)"
+                        )}
                       </Button>
                     )}
                   </div>
                 ) : canPayDeposit && (
                   <Button
-                    asChild
                     size="lg"
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      try {
+                        // Submit quote to backend
+                        const result = await submitQuote.mutateAsync({
+                          customerName: contactInfo.fullName,
+                          customerEmail: contactInfo.email,
+                          customerPhone: contactInfo.phone,
+                          boatLength: boatDetails.length,
+                          boatType: boatDetails.type,
+                          serviceLocation: boatDetails.location,
+                          estimatedTotal: Math.round((estimate?.subtotal || 0) * 100), // convert to cents
+                          requiresManualReview: false,
+                          servicesConfig: {
+                            selectedServices,
+                            gelcoat: selectedServices.gelcoat ? gelcoatConfig : undefined,
+                            exterior: selectedServices.exterior ? exteriorConfig : undefined,
+                            interior: selectedServices.interior ? interiorConfig : undefined,
+                            ceramic: selectedServices.ceramic ? ceramicConfig : undefined,
+                            graphene: selectedServices.graphene ? grapheneConfig : undefined,
+                            wetSanding: selectedServices.wetSanding ? wetSandingConfig : undefined,
+                            bottomPainting: selectedServices.bottomPainting ? bottomPaintingConfig : undefined,
+                            vinyl: selectedServices.vinyl ? vinylConfig : undefined,
+                          },
+                        });
+                        
+                        // Store quote ID in localStorage for thank you page
+                        localStorage.setItem('lastQuoteId', result.quoteId.toString());
+                        
+                        // Redirect to Stripe payment
+                        window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                      } catch (error) {
+                        console.error('Failed to submit quote:', error);
+                        alert('Failed to submit quote. Please try again.');
+                        setIsSubmitting(false);
+                      }
+                    }}
                   >
-                    <a href="https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01" target="_blank" rel="noopener noreferrer">
-                      Pay $250 Deposit
-                    </a>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Pay $250 Deposit"
+                    )}
                   </Button>
                 )}
               </CardContent>
