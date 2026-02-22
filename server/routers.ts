@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { createQuote, getAllQuotes, getQuoteById, updateQuotePaymentStatus } from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -69,12 +69,12 @@ export const appRouter = router({
       }),
 
     // Get all quotes (for admin)
-    list: publicProcedure.query(async () => {
+    list: adminProcedure.query(async () => {
       return await getAllQuotes();
     }),
 
-    // Update payment status
-    updatePaymentStatus: publicProcedure
+    // Update payment status (admin only)
+    updatePaymentStatus: adminProcedure
       .input(
         z.object({
           id: z.number(),

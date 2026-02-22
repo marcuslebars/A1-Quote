@@ -91,3 +91,16 @@
 - [x] Test admin deployment routing (homepage redirects correctly)
 - [ ] Save checkpoint for admin deployment
 - [ ] Provide DNS and deployment instructions
+
+
+## Admin Authentication (New Request)
+- [x] Add useAuth hook to AdminQuotes page
+- [x] Show login screen for unauthenticated users
+- [x] Create adminProcedure in tRPC for role-based access
+- [x] Update quotes.list endpoint to use adminProcedure
+- [x] Update quotes.updatePaymentStatus to use adminProcedure
+- [x] Add role check (admin only access)
+- [x] Test authentication flow (7/7 tests passing)
+- [x] Verify owner auto-promoted to admin role
+- [x] Verify non-admin users get 'user' role by default
+- [ ] Save checkpoint with authentication
