@@ -45,7 +45,7 @@ if (process.env.NODE_ENV === "development") {
 
 // Production: Serve static files
 if (process.env.NODE_ENV === "production") {
-  const clientPath = path.join(__dirname, "../client");
+  const clientPath = path.join(__dirname, "public");
   app.use(express.static(clientPath));
   
   app.get("*", (req, res) => {
