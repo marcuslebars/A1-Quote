@@ -4,10 +4,18 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe";
+import { connectDB } from "./db/mongodb";
 import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Connect to MongoDB
+try {
+  await connectDB();
+} catch (error) {
+  console.error("Failed to connect to MongoDB:", error);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;

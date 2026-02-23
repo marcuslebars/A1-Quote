@@ -32,11 +32,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         const paymentIntentId = session.payment_intent;
 
         if (quoteId && paymentIntentId) {
-          await updateQuotePaymentStatus(
-            parseInt(quoteId),
-            paymentIntentId as string,
-            "paid"
-          );
+          await updateQuotePaymentStatus(quoteId, {
+            depositPaid: true,
+            stripePaymentIntentId: paymentIntentId as string,
+            stripeSessionId: session.id,
+          });
           
           console.log(`[Stripe Webhook] Quote ${quoteId} marked as paid`);
           
