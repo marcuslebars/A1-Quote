@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.vite
+.manus
+.manus-logs
+.webdev
+*.log
+.env*
