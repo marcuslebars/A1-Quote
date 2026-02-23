@@ -6,8 +6,6 @@ import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -34,8 +32,9 @@ app.use(
   })
 );
 
-// Development: Vite dev server
+// Development: Vite dev server (dynamic import to avoid loading vite in production)
 if (process.env.NODE_ENV === "development") {
+  const { createServer: createViteServer } = await import("vite");
   const vite = await createViteServer({
     server: { middlewareMode: true },
     appType: "spa",
