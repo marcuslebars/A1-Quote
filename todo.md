@@ -70,5 +70,6 @@
 - [x] Fix server static file serving path for production
 - [x] Fix wildcard route pattern for SPA
 - [x] Fix server to listen on 0.0.0.0 in production
+- [x] Fix wildcard route syntax error (use regex pattern instead)
 - [ ] Verify Railway configuration files are correct
 - [ ] Test deployment and resolve 502 errors

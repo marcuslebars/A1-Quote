@@ -55,8 +55,8 @@ if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "public");
   app.use(express.static(clientPath));
   
-  // Catch-all route for SPA (must be last)
-  app.get("*", (req, res) => {
+  // Catch-all route for SPA - only for non-API routes
+  app.get(/^(?!\/api).*$/, (req, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
   });
 }
