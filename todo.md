@@ -71,5 +71,7 @@
 - [x] Fix wildcard route pattern for SPA
 - [x] Fix server to listen on 0.0.0.0 in production
 - [x] Fix wildcard route syntax error (use regex pattern instead)
-- [ ] Verify Railway configuration files are correct
+- [x] Add dedicated /health endpoint for Railway health checks
+- [x] Update railway.json to use /health instead of /
+- [ ] Push changes to GitHub to trigger Railway redeploy
 - [ ] Test deployment and resolve 502 errors

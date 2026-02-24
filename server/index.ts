@@ -20,6 +20,11 @@ try {
 const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
+// Health check endpoint for Railway
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 // Stripe webhook (must be before body parser)
 app.post(
   "/api/webhooks/stripe",
