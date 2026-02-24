@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { updateQuotePaymentStatus, getQuoteById } from "./db";
+import { triggerMarinaCall } from "./elevenlabs";
 
 /**
  * Stripe webhook handler for payment confirmations
@@ -40,38 +41,24 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           
           console.log(`[Stripe Webhook] Quote ${quoteId} marked as paid`);
           
-          // Trigger Marina AI to call customer
+          // Trigger Marina AI to call customer via ElevenLabs
           try {
             const quote = await getQuoteById(quoteId);
-            if (quote) {
-              // TODO: Replace with actual Marina AI API endpoint
-              // This would trigger Marina to call the customer with context
-              const marinaContext = {
-                customerName: quote.fullName,
-                customerPhone: quote.phone,
-                customerEmail: quote.email,
-                boatDetails: {
-                  length: quote.boatLength,
-                  type: quote.boatType,
-                  location: quote.location,
-                },
-                servicesSelected: quote.services,
-                estimatedTotal: quote.total,
-                depositPaid: true,
-                quoteId: quote.id,
-              };
+            if (quote && quote.phone) {
+              console.log('[Marina AI] Triggering ElevenLabs call for quote:', quoteId);
               
-              console.log('[Marina AI] Would trigger call with context:', marinaContext);
+              const result = await triggerMarinaCall(quote.phone);
               
-              // Example API call (uncomment when Marina API is ready):
-              // await fetch('https://marina-api.example.com/trigger-call', {
-              //   method: 'POST',
-              //   headers: { 'Content-Type': 'application/json' },
-              //   body: JSON.stringify(marinaContext),
-              // });
+              if (result.success) {
+                console.log('[Marina AI] Call initiated successfully:', result.conversationId);
+              } else {
+                console.error('[Marina AI] Failed to initiate call:', result.error);
+              }
+            } else {
+              console.warn('[Marina AI] No quote or phone number found for:', quoteId);
             }
           } catch (error) {
-            console.error('[Marina AI] Failed to trigger call:', error);
+            console.error('[Marina AI] Error triggering call:', error);
           }
         }
         break;

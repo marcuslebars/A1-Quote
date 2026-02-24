@@ -97,3 +97,9 @@
 - [ ] Update Stripe webhook to trigger ElevenLabs call after payment
 - [ ] Add ElevenLabs API credentials to environment variables
 - [ ] Test Marina context webhook with ElevenLabs
+
+## ElevenLabs Marina Integration
+- [x] Add ELEVENLABS_AGENT_ID and ELEVENLABS_API_KEY to Railway environment
+- [x] Update Stripe webhook to trigger ElevenLabs call after payment
+- [x] Create ElevenLabs service for triggering Marina calls
+- [ ] Test complete flow: quote submission → payment → Marina call
