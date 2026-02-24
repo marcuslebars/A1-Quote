@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { createQuote, getAllQuotes, getQuoteById } from "./db";
+import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStripeSessionId } from "./db";
 import { publicProcedure, router } from "./trpc";
+import { triggerMarinaCall } from "./elevenlabs";
 
 export const appRouter = router({
   quotes: router({
@@ -60,6 +61,42 @@ export const appRouter = router({
     list: publicProcedure.query(async () => {
       return await getAllQuotes();
     }),
+
+    // Get quote by Stripe session ID
+    getBySessionId: publicProcedure
+      .input(z.object({ sessionId: z.string() }))
+      .query(async ({ input }) => {
+        const quote = await getQuoteByStripeSessionId(input.sessionId);
+        if (!quote) {
+          throw new Error("Quote not found for this session");
+        }
+        return quote;
+      }),
+  }),
+
+  marina: router({
+    // Request a call from Marina
+    requestCall: publicProcedure
+      .input(z.object({ quoteId: z.string() }))
+      .mutation(async ({ input }) => {
+        // Get quote details
+        const quote = await getQuoteById(input.quoteId);
+        if (!quote) {
+          throw new Error("Quote not found");
+        }
+
+        // Trigger ElevenLabs call
+        const result = await triggerMarinaCall(quote.phone);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to trigger Marina call');
+        }
+
+        return {
+          success: true,
+          conversationId: result.conversationId,
+        };
+      }),
   }),
 });
 

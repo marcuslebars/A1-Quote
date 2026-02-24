@@ -114,3 +114,18 @@
 ## ElevenLabs Webhook Security
 - [x] Add ELEVENLABS_WEBHOOK_SECRET to Railway environment
 - [ ] Update Marina context endpoint to verify webhook signatures
+
+## Debug Marina Call Triggering
+- [ ] Check Railway logs for Stripe webhook events
+- [ ] Verify ElevenLabs API call is being made
+- [ ] Check for errors in Marina call triggering
+
+## Thank You Page with Marina Chatbot
+- [x] Create /thank-you page that accepts quoteId parameter
+- [x] Embed ElevenLabs Marina chatbot widget
+- [x] Add "Request a Call" button to trigger Marina phone call
+- [x] Display quote summary and next steps
+- [x] Update Stripe payment link success_url to redirect to thank you page (done in Stripe Dashboard)
+- [x] Add VITE_ELEVENLABS_AGENT_ID environment variable
+- [x] Update ThankYou page to handle session_id from Stripe redirect
+- [x] Add getBySessionId tRPC endpoint to fetch quote by Stripe session ID
