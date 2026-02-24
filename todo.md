@@ -103,3 +103,14 @@
 - [x] Update Stripe webhook to trigger ElevenLabs call after payment
 - [x] Create ElevenLabs service for triggering Marina calls
 - [ ] Test complete flow: quote submission → payment → Marina call
+
+## Debug Marina Call Issue
+- [ ] Check Railway logs for Stripe webhook events
+- [ ] Verify Stripe webhook is configured and sending events
+- [ ] Check for errors in ElevenLabs API call
+- [ ] Verify quote metadata includes quoteId in Stripe checkout
+- [ ] Test Marina call triggering manually
+
+## ElevenLabs Webhook Security
+- [x] Add ELEVENLABS_WEBHOOK_SECRET to Railway environment
+- [ ] Update Marina context endpoint to verify webhook signatures
