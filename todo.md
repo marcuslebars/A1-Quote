@@ -88,3 +88,6 @@
 
 ## Update Stripe Payment Link
 - [x] Change payment link to https://buy.stripe.com/7sY28r85acl96iwb1rgbm02
+
+## Update to Active Stripe Link
+- [x] Change payment link to https://buy.stripe.com/14A9AT3OUeth4aoglLgbm03
