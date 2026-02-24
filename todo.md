@@ -129,3 +129,10 @@
 - [x] Add VITE_ELEVENLABS_AGENT_ID environment variable
 - [x] Update ThankYou page to handle session_id from Stripe redirect
 - [x] Add getBySessionId tRPC endpoint to fetch quote by Stripe session ID
+
+## Fix Thank You Page Issues
+- [x] Debug Marina chatbot widget not loading (fixed script URL and agent-id attribute)
+- [x] Fix Request Call button appearing blank (removed duplicate className)
+- [x] Fix Request Call button not triggering Marina call (fixed button implementation)
+- [ ] Test complete flow after fixes
+- [ ] Deploy to Railway and verify fixes

@@ -16,6 +16,7 @@ export default function ThankYou() {
   const [quoteId, setQuoteId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [callRequested, setCallRequested] = useState(false);
+  const [widgetInitialized, setWidgetInitialized] = useState(false);
 
   // Get session_id or quoteId from URL parameters
   useEffect(() => {
@@ -57,6 +58,18 @@ export default function ThankYou() {
       setQuoteId(quoteBySession.id);
     }
   }, [quoteBySession]);
+
+  // Initialize ElevenLabs widget with agent ID
+  useEffect(() => {
+    const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
+    if (agentId && !widgetInitialized) {
+      const widget = document.querySelector('elevenlabs-convai');
+      if (widget) {
+        widget.setAttribute('agent-id', agentId);
+        setWidgetInitialized(true);
+      }
+    }
+  }, [widgetInitialized]);
 
   // Mutation to trigger Marina call
   const requestCall = trpc.marina.requestCall.useMutation({
@@ -237,9 +250,8 @@ export default function ThankYou() {
                       Prefer to talk? Marina will call you shortly
                     </p>
                     <Button 
-                      className="w-full" 
                       variant="outline"
-                      className="w-full border-gray-700 hover:bg-gray-800 text-white"
+                      className="w-full border-gray-700 hover:bg-gray-800 text-white font-semibold"
                       onClick={handleRequestCall}
                       disabled={callRequested || requestCall.isPending}
                     >
@@ -257,7 +269,7 @@ export default function ThankYou() {
 
               {/* Marina Chatbot Widget */}
               <div id="marina-chatbot" className="w-full h-[600px] rounded-lg border border-gray-700 overflow-hidden bg-black/30">
-                <elevenlabs-convai agent-id={import.meta.env.VITE_ELEVENLABS_AGENT_ID || ""}></elevenlabs-convai>
+                <elevenlabs-convai></elevenlabs-convai>
               </div>
             </CardContent>
           </Card>
