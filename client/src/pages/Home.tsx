@@ -866,7 +866,7 @@ export default function Home() {
                             localStorage.setItem('lastQuoteId', result.quoteId.toString());
                             
                             // Redirect to Stripe payment
-                            window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                            window.location.href = "https://buy.stripe.com/7sY28r85acl96iwb1rgbm02";
                           } catch (error) {
                             console.error('Failed to submit quote:', error);
                             alert('Failed to submit quote. Please try again.');
@@ -920,7 +920,7 @@ export default function Home() {
                         localStorage.setItem('lastQuoteId', result.quoteId.toString());
                         
                         // Redirect to Stripe payment
-                        window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                        window.location.href = "https://buy.stripe.com/7sY28r85acl96iwb1rgbm02";
                       } catch (error) {
                         console.error('Failed to submit quote:', error);
                         alert('Failed to submit quote. Please try again.');

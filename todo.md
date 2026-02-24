@@ -80,3 +80,8 @@
 - [x] Remove healthcheckPath from railway.json to use Railway's default TCP check
 - [ ] Verify server responds to root path requests
 - [ ] Test deployment after health check removal
+
+## Stripe Payment Link Update
+- [x] Update Stripe payment link to new test link
+- [ ] Test complete quote submission flow
+- [ ] Verify payment redirects work correctly
