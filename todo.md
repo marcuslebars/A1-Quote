@@ -65,3 +65,10 @@
 - [ ] Add email notifications for quote confirmations
 - [ ] Implement quote expiration logic
 - [ ] Add analytics tracking for conversion rates
+
+## Railway Deployment Fixes (Current)
+- [x] Fix server static file serving path for production
+- [x] Fix wildcard route pattern for SPA
+- [x] Fix server to listen on 0.0.0.0 in production
+- [ ] Verify Railway configuration files are correct
+- [ ] Test deployment and resolve 502 errors
