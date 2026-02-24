@@ -18,7 +18,7 @@ try {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || "3000", 10);
 
 // Stripe webhook (must be before body parser)
 app.post(
@@ -60,8 +60,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📊 tRPC API: http://localhost:${PORT}/api/trpc`);
-  console.log(`💳 Stripe webhook: http://localhost:${PORT}/api/webhooks/stripe`);
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+
+app.listen(PORT, HOST, () => {
+  console.log(`✅ Server running on http://${HOST}:${PORT}`);
+  console.log(`📊 tRPC API: http://${HOST}:${PORT}/api/trpc`);
+  console.log(`💳 Stripe webhook: http://${HOST}:${PORT}/api/webhooks/stripe`);
 });
