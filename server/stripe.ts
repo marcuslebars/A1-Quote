@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { updateQuotePaymentStatus } from "./db";
+import { updateQuotePaymentStatus, getQuoteById } from "./db";
 
 /**
  * Stripe webhook handler for payment confirmations
@@ -40,8 +40,39 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           
           console.log(`[Stripe Webhook] Quote ${quoteId} marked as paid`);
           
-          // TODO: Trigger Marina AI agent to call customer
-          // This is where you would integrate with ElevenLabs API
+          // Trigger Marina AI to call customer
+          try {
+            const quote = await getQuoteById(quoteId);
+            if (quote) {
+              // TODO: Replace with actual Marina AI API endpoint
+              // This would trigger Marina to call the customer with context
+              const marinaContext = {
+                customerName: quote.fullName,
+                customerPhone: quote.phone,
+                customerEmail: quote.email,
+                boatDetails: {
+                  length: quote.boatLength,
+                  type: quote.boatType,
+                  location: quote.location,
+                },
+                servicesSelected: quote.services,
+                estimatedTotal: quote.total,
+                depositPaid: true,
+                quoteId: quote.id,
+              };
+              
+              console.log('[Marina AI] Would trigger call with context:', marinaContext);
+              
+              // Example API call (uncomment when Marina API is ready):
+              // await fetch('https://marina-api.example.com/trigger-call', {
+              //   method: 'POST',
+              //   headers: { 'Content-Type': 'application/json' },
+              //   body: JSON.stringify(marinaContext),
+              // });
+            }
+          } catch (error) {
+            console.error('[Marina AI] Failed to trigger call:', error);
+          }
         }
         break;
       }
