@@ -85,3 +85,6 @@
 - [x] Update Stripe payment link to new test link
 - [ ] Test complete quote submission flow
 - [ ] Verify payment redirects work correctly
+
+## Update Stripe Payment Link
+- [x] Change payment link to https://buy.stripe.com/7sY28r85acl96iwb1rgbm02
