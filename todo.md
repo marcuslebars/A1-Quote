@@ -91,3 +91,9 @@
 
 ## Update to Active Stripe Link
 - [x] Change payment link to https://buy.stripe.com/14A9AT3OUeth4aoglLgbm03
+
+## Marina AI Webhook Integration
+- [x] Create /api/marina/context endpoint with ElevenLabs conversation_initiation_client_data format
+- [ ] Update Stripe webhook to trigger ElevenLabs call after payment
+- [ ] Add ElevenLabs API credentials to environment variables
+- [ ] Test Marina context webhook with ElevenLabs

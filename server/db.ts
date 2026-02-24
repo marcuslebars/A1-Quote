@@ -60,3 +60,9 @@ export async function getQuoteByStripeSessionId(sessionId: string) {
   const quote = await Quote.findOne({ stripeSessionId: sessionId });
   return quote ? quote.toObject() : null;
 }
+
+export async function getQuoteByPhone(phone: string) {
+  // Find the most recent quote for this phone number
+  const quote = await Quote.findOne({ phone }).sort({ createdAt: -1 });
+  return quote ? quote.toObject() : null;
+}

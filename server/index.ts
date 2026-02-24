@@ -4,6 +4,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe";
+import marinaRouter from "./marina";
 import { connectDB } from "./db/mongodb";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -57,6 +58,10 @@ app.use(
 );
 console.log('[Server] tRPC configured');
 
+// Marina AI webhook
+app.use("/api/marina", marinaRouter);
+console.log('[Server] Marina webhook configured');
+
 // Development: Vite dev server (dynamic import to avoid loading vite in production)
 if (process.env.NODE_ENV === "development") {
   const { createServer: createViteServer } = await import("vite");
@@ -92,6 +97,7 @@ try {
     console.log(`✅ Server running on http://${HOST}:${PORT}`);
     console.log(`📊 tRPC API: http://${HOST}:${PORT}/api/trpc`);
     console.log(`💳 Stripe webhook: http://${HOST}:${PORT}/api/webhooks/stripe`);
+    console.log(`🤖 Marina webhook: http://${HOST}:${PORT}/api/marina/context`);
     console.log(`🏥 Health check: http://${HOST}:${PORT}/health`);
   });
 } catch (error) {
