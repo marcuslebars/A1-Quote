@@ -75,3 +75,8 @@
 - [x] Update railway.json to use /health instead of /
 - [ ] Push changes to GitHub to trigger Railway redeploy
 - [ ] Test deployment and resolve 502 errors
+
+## Railway Health Check Fix
+- [x] Remove healthcheckPath from railway.json to use Railway's default TCP check
+- [ ] Verify server responds to root path requests
+- [ ] Test deployment after health check removal
