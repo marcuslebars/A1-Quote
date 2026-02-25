@@ -269,7 +269,7 @@ export default function Home() {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="(555) 123-4567"
+                    placeholder="(705) 996-1010"
                     value={contactInfo.phone}
                     onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
                     className="bg-input border-border text-foreground placeholder:text-muted-foreground"

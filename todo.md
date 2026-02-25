@@ -136,3 +136,12 @@
 - [x] Fix Request Call button not triggering Marina call (fixed button implementation)
 - [ ] Test complete flow after fixes
 - [ ] Deploy to Railway and verify fixes
+
+## Update Contact Info and Fix Marina Features
+- [x] Update contact email to contact@a1marinecare.ca
+- [x] Update contact phone to (705) 996-1010
+- [x] Debug why Marina chat widget is not initializing
+- [x] Fix Marina chat widget to display properly (improved initialization with retry logic)
+- [x] Update Request Call to use phone number from quote data (already implemented correctly)
+- [ ] Test Marina chat widget functionality after deployment
+- [ ] Test Request Call with actual phone number after deployment

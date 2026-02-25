@@ -62,13 +62,42 @@ export default function ThankYou() {
   // Initialize ElevenLabs widget with agent ID
   useEffect(() => {
     const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
-    if (agentId && !widgetInitialized) {
+    if (!agentId) {
+      console.error('[Marina] VITE_ELEVENLABS_AGENT_ID not set');
+      return;
+    }
+
+    if (widgetInitialized) return;
+
+    // Wait for the ElevenLabs script to load and widget to be available
+    const initWidget = () => {
       const widget = document.querySelector('elevenlabs-convai');
       if (widget) {
+        console.log('[Marina] Initializing widget with agent ID:', agentId);
         widget.setAttribute('agent-id', agentId);
         setWidgetInitialized(true);
+        return true;
       }
-    }
+      return false;
+    };
+
+    // Try immediately
+    if (initWidget()) return;
+
+    // Retry with intervals if not ready
+    const maxRetries = 10;
+    let retries = 0;
+    const interval = setInterval(() => {
+      retries++;
+      if (initWidget() || retries >= maxRetries) {
+        clearInterval(interval);
+        if (retries >= maxRetries) {
+          console.error('[Marina] Failed to initialize widget after', maxRetries, 'retries');
+        }
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
   }, [widgetInitialized]);
 
   // Mutation to trigger Marina call
@@ -190,14 +219,14 @@ export default function ThankYou() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-gray-300">
                   <Mail className="w-5 h-5 text-cyan-400" />
-                  <a href="mailto:info@a1marinecare.ca" className="hover:text-cyan-400 transition-colors">
-                    info@a1marinecare.ca
+                  <a href="mailto:contact@a1marinecare.ca" className="hover:text-cyan-400 transition-colors">
+                    contact@a1marinecare.ca
                   </a>
                 </div>
                 <div className="flex items-center gap-3 text-gray-300">
                   <Phone className="w-5 h-5 text-cyan-400" />
-                  <a href="tel:+15551234567" className="hover:text-cyan-400 transition-colors">
-                    (555) 123-4567
+                  <a href="tel:+17059961010" className="hover:text-cyan-400 transition-colors">
+                    (705) 996-1010
                   </a>
                 </div>
               </div>
