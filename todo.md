@@ -170,3 +170,10 @@
 - [x] Add ELEVENLABS_PHONE_NUMBER_ID requirement (phnum_7201kgx1rcgvfbst4cymh315ntmh)
 - [ ] Set ELEVENLABS_PHONE_NUMBER_ID in Railway environment variables
 - [ ] Test Request Call feature after deployment
+
+## Custom Marina Chat Interface & Cal.com Integration
+- [x] Install @calcom/embed-react package
+- [x] Integrate Cal.com booking calendar embed
+- [x] Add booking calendar to thank you page
+- [x] Configure Cal.com with dark theme and cyan brand color
+- [ ] Test booking calendar functionality after deployment

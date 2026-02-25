@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
+import Cal, { getCalApi } from "@calcom/embed-react";
 
 /**
  * Design Philosophy: Modern Marine Elegance
@@ -20,42 +21,14 @@ const ELEVENLABS_AGENT_ID = "agent_7701kgqf82xyekdafeh4mqvae127";
 export default function ThankYou() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [callRequested, setCallRequested] = useState(false);
-  const [widgetInitialized, setWidgetInitialized] = useState(false);
 
-  // Initialize ElevenLabs widget with hardcoded agent ID
+  // Initialize Cal.com embed
   useEffect(() => {
-    if (widgetInitialized) return;
-
-    // Wait for the ElevenLabs script to load and widget to be available
-    const initWidget = () => {
-      const widget = document.querySelector('elevenlabs-convai');
-      if (widget) {
-        console.log('[Marina] Initializing widget with agent ID:', ELEVENLABS_AGENT_ID);
-        widget.setAttribute('agent-id', ELEVENLABS_AGENT_ID);
-        setWidgetInitialized(true);
-        return true;
-      }
-      return false;
-    };
-
-    // Try immediately
-    if (initWidget()) return;
-
-    // Retry with intervals if not ready
-    const maxRetries = 20;
-    let retries = 0;
-    const interval = setInterval(() => {
-      retries++;
-      if (initWidget() || retries >= maxRetries) {
-        clearInterval(interval);
-        if (retries >= maxRetries) {
-          console.error('[Marina] Failed to initialize widget after', maxRetries, 'retries');
-        }
-      }
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, [widgetInitialized]);
+    (async function () {
+      const cal = await getCalApi({"namespace":"book-your-service"});
+      cal("ui", {"theme":"dark","cssVarsPerTheme":{"light":{"cal-brand":"#00ffff"},"dark":{"cal-brand":"#00ffff"}},"hideEventTypeDetails":true,"layout":"month_view"});
+    })();
+  }, []);
 
   // Mutation to trigger Marina call with phone number
   const requestCall = trpc.marina.requestCallByPhone.useMutation({
@@ -192,35 +165,7 @@ export default function ThankYou() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Chat with Marina */}
-                <Card className="bg-black/50 border-gray-700 hover:border-cyan-400/50 transition-colors">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-cyan-400/10">
-                        <MessageSquare className="w-6 h-6 text-cyan-400" />
-                      </div>
-                      <CardTitle className="text-white text-lg">Chat with Marina</CardTitle>
-                    </div>
-                    <CardDescription className="text-gray-400">
-                      Schedule your appointment through our AI assistant
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={() => {
-                        const widget = document.querySelector('elevenlabs-convai') as any;
-                        if (widget && widget.startConversation) {
-                          widget.startConversation();
-                        }
-                      }}
-                      className="w-full bg-cyan-400 hover:bg-cyan-500 text-black font-semibold" 
-                    >
-                      Start Chat
-                    </Button>
-                  </CardContent>
-                </Card>
-
+              <div className="grid md:grid-cols-1 gap-4">
                 {/* Request a Call */}
                 <Card className="bg-black/50 border-gray-700 hover:border-cyan-400/50 transition-colors">
                   <CardHeader>
@@ -263,9 +208,14 @@ export default function ThankYou() {
                 </Card>
               </div>
 
-              {/* Marina Chatbot Widget */}
-              <div id="marina-chatbot" className="w-full h-[600px] rounded-lg border border-gray-700 overflow-hidden bg-black/30 relative">
-                <elevenlabs-convai></elevenlabs-convai>
+              {/* Cal.com Booking Calendar */}
+              <div className="w-full h-[700px] rounded-lg border border-gray-700 overflow-hidden bg-black/30">
+                <Cal 
+                  namespace="book-your-service"
+                  calLink="a1-marine-care/book-your-service"
+                  style={{width:"100%",height:"100%",overflow:"scroll"}}
+                  config={{"layout":"month_view","useSlotsViewOnSmallScreen":"true","theme":"dark"}}
+                />
               </div>
             </CardContent>
           </Card>
