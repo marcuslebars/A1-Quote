@@ -1,22 +1,35 @@
 /**
  * ElevenLabs Conversational AI Integration
- * Triggers Marina AI calls with customer context
+ * Triggers Marina AI calls with customer context via Twilio
  */
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID;
+const ELEVENLABS_PHONE_NUMBER_ID = process.env.ELEVENLABS_PHONE_NUMBER_ID;
 
 export async function triggerMarinaCall(phoneNumber: string) {
-  if (!ELEVENLABS_API_KEY || !ELEVENLABS_AGENT_ID) {
-    console.error('[ElevenLabs] Missing credentials - ELEVENLABS_API_KEY or ELEVENLABS_AGENT_ID not set');
-    return { success: false, error: 'Missing ElevenLabs credentials' };
+  if (!ELEVENLABS_API_KEY || !ELEVENLABS_AGENT_ID || !ELEVENLABS_PHONE_NUMBER_ID) {
+    console.error('[ElevenLabs] Missing credentials:', {
+      hasApiKey: !!ELEVENLABS_API_KEY,
+      hasAgentId: !!ELEVENLABS_AGENT_ID,
+      hasPhoneNumberId: !!ELEVENLABS_PHONE_NUMBER_ID
+    });
+    return { 
+      success: false, 
+      error: 'Missing ElevenLabs credentials. Please contact support.' 
+    };
   }
 
   try {
-    console.log('[ElevenLabs] Triggering call to:', phoneNumber);
+    // Format phone number to E.164 format: +1234567890
+    const formattedPhone = phoneNumber.startsWith('+') 
+      ? phoneNumber 
+      : `+1${phoneNumber.replace(/\D/g, '')}`;
+
+    console.log('[ElevenLabs] Triggering call to:', formattedPhone);
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/convai/conversation`,
+      `https://api.elevenlabs.io/v1/convai/twilio/outbound-call`,
       {
         method: 'POST',
         headers: {
@@ -25,8 +38,8 @@ export async function triggerMarinaCall(phoneNumber: string) {
         },
         body: JSON.stringify({
           agent_id: ELEVENLABS_AGENT_ID,
-          // Phone number should be in E.164 format: +1234567890
-          phone_number: phoneNumber.startsWith('+') ? phoneNumber : `+1${phoneNumber.replace(/\D/g, '')}`,
+          agent_phone_number_id: ELEVENLABS_PHONE_NUMBER_ID,
+          to_number: formattedPhone,
         }),
       }
     );
@@ -36,7 +49,7 @@ export async function triggerMarinaCall(phoneNumber: string) {
       console.error('[ElevenLabs] API error:', response.status, errorText);
       return { 
         success: false, 
-        error: `ElevenLabs API error: ${response.status} ${errorText}` 
+        error: `ElevenLabs API error: ${response.status} - ${errorText}` 
       };
     }
 
@@ -46,6 +59,7 @@ export async function triggerMarinaCall(phoneNumber: string) {
     return { 
       success: true, 
       conversationId: data.conversation_id,
+      callSid: data.callSid,
       data 
     };
   } catch (error) {

@@ -161,3 +161,12 @@
 - [x] Hardcode ElevenLabs agent ID to bypass environment variable issues (agent_7701kgqf82xyekdafeh4mqvae127)
 - [x] Make both Marina features work immediately without complex setup
 - [x] Add requestCallByPhone tRPC endpoint for direct phone number input
+
+## Request Call API Failure
+- [x] Debug triggerMarinaCall function failure
+- [x] Check ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID are set in Railway
+- [x] Verify ElevenLabs API endpoint and request format (updated to /v1/convai/twilio/outbound-call)
+- [x] Add better error logging to identify the issue
+- [x] Add ELEVENLABS_PHONE_NUMBER_ID requirement (phnum_7201kgx1rcgvfbst4cymh315ntmh)
+- [ ] Set ELEVENLABS_PHONE_NUMBER_ID in Railway environment variables
+- [ ] Test Request Call feature after deployment
