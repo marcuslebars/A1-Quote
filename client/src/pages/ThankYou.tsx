@@ -17,6 +17,7 @@ export default function ThankYou() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [callRequested, setCallRequested] = useState(false);
   const [widgetInitialized, setWidgetInitialized] = useState(false);
+  const [widgetError, setWidgetError] = useState<string | null>(null);
 
   // Get session_id or quoteId from URL parameters
   useEffect(() => {
@@ -38,13 +39,13 @@ export default function ThankYou() {
   }, []);
 
   // Fetch quote by session ID if we have one
-  const { data: quoteBySession } = trpc.quote.getBySessionId.useQuery(
+  const { data: quoteBySession } = trpc.quotes.getBySessionId.useQuery(
     { sessionId: sessionId || "" },
     { enabled: !!sessionId }
   );
 
   // Fetch quote by ID if we have one
-  const { data: quoteById } = trpc.quote.getById.useQuery(
+  const { data: quoteById } = trpc.quotes.getById.useQuery(
     { id: quoteId || "" },
     { enabled: !!quoteId && !sessionId }
   );
@@ -64,6 +65,7 @@ export default function ThankYou() {
     const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
     if (!agentId) {
       console.error('[Marina] VITE_ELEVENLABS_AGENT_ID not set');
+      setWidgetError('Chat widget configuration missing. Please contact support.');
       return;
     }
 
@@ -76,6 +78,7 @@ export default function ThankYou() {
         console.log('[Marina] Initializing widget with agent ID:', agentId);
         widget.setAttribute('agent-id', agentId);
         setWidgetInitialized(true);
+        setWidgetError(null);
         return true;
       }
       return false;
@@ -85,7 +88,7 @@ export default function ThankYou() {
     if (initWidget()) return;
 
     // Retry with intervals if not ready
-    const maxRetries = 10;
+    const maxRetries = 20;
     let retries = 0;
     const interval = setInterval(() => {
       retries++;
@@ -93,6 +96,7 @@ export default function ThankYou() {
         clearInterval(interval);
         if (retries >= maxRetries) {
           console.error('[Marina] Failed to initialize widget after', maxRetries, 'retries');
+          setWidgetError('Chat widget failed to load. Please refresh the page or contact us directly.');
         }
       }
     }, 500);
@@ -105,12 +109,18 @@ export default function ThankYou() {
     onSuccess: () => {
       setCallRequested(true);
     },
+    onError: (error) => {
+      console.error('[Marina] Failed to request call:', error);
+      alert('Failed to request call. Please try again or contact us directly at (705) 996-1010');
+    },
   });
 
   const handleRequestCall = () => {
-    if (quoteId) {
-      requestCall.mutate({ quoteId });
+    if (!quoteId) {
+      alert('Unable to request call. Please contact us directly at (705) 996-1010');
+      return;
     }
+    requestCall.mutate({ quoteId });
   };
 
   return (
@@ -297,8 +307,24 @@ export default function ThankYou() {
               </div>
 
               {/* Marina Chatbot Widget */}
-              <div id="marina-chatbot" className="w-full h-[600px] rounded-lg border border-gray-700 overflow-hidden bg-black/30">
-                <elevenlabs-convai></elevenlabs-convai>
+              <div id="marina-chatbot" className="w-full h-[600px] rounded-lg border border-gray-700 overflow-hidden bg-black/30 relative">
+                {widgetError ? (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <MessageSquare className="w-16 h-16 text-gray-600 mb-4" />
+                    <p className="text-gray-400 mb-4">{widgetError}</p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-500">Contact us directly:</p>
+                      <a href="mailto:contact@a1marinecare.ca" className="text-cyan-400 hover:text-cyan-300 block">
+                        contact@a1marinecare.ca
+                      </a>
+                      <a href="tel:+17059961010" className="text-cyan-400 hover:text-cyan-300 block">
+                        (705) 996-1010
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <elevenlabs-convai></elevenlabs-convai>
+                )}
               </div>
             </CardContent>
           </Card>

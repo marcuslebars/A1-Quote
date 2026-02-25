@@ -145,3 +145,12 @@
 - [x] Update Request Call to use phone number from quote data (already implemented correctly)
 - [ ] Test Marina chat widget functionality after deployment
 - [ ] Test Request Call with actual phone number after deployment
+
+## Critical Bug Fixes - Production Issues
+- [x] Fix tRPC 404 errors on production (changed quote to quotes in ThankYou component)
+- [x] Fix Marina chat widget not loading on production (added fallback UI and error handling)
+- [x] Fix Request Call button not triggering any action (added error handling and validation)
+- [x] Update accent color to brand cyan (#00FFFF) on thank you page (already using cyan-400)
+- [x] Verify ElevenLabs widget script is loading correctly (script loads, needs VITE_ELEVENLABS_AGENT_ID env var)
+- [ ] Set VITE_ELEVENLABS_AGENT_ID in Railway environment variables
+- [ ] Test complete flow on production after deployment
