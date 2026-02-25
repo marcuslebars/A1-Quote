@@ -75,7 +75,7 @@ export const appRouter = router({
   }),
 
   marina: router({
-    // Request a call from Marina
+    // Request a call from Marina (using quote ID)
     requestCall: publicProcedure
       .input(z.object({ quoteId: z.string() }))
       .mutation(async ({ input }) => {
@@ -87,6 +87,23 @@ export const appRouter = router({
 
         // Trigger ElevenLabs call
         const result = await triggerMarinaCall(quote.phone);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to trigger Marina call');
+        }
+
+        return {
+          success: true,
+          conversationId: result.conversationId,
+        };
+      }),
+
+    // Request a call from Marina (using phone number directly)
+    requestCallByPhone: publicProcedure
+      .input(z.object({ phoneNumber: z.string().min(10) }))
+      .mutation(async ({ input }) => {
+        // Trigger ElevenLabs call with provided phone number
+        const result = await triggerMarinaCall(input.phoneNumber);
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to trigger Marina call');

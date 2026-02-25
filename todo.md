@@ -154,3 +154,10 @@
 - [x] Verify ElevenLabs widget script is loading correctly (script loads, needs VITE_ELEVENLABS_AGENT_ID env var)
 - [ ] Set VITE_ELEVENLABS_AGENT_ID in Railway environment variables
 - [ ] Test complete flow on production after deployment
+
+## Production Issues After Railway Deployment
+- [x] Simplify thank you page to not require quote ID from URL
+- [x] Add phone number input field for Request Call feature
+- [x] Hardcode ElevenLabs agent ID to bypass environment variable issues (agent_7701kgqf82xyekdafeh4mqvae127)
+- [x] Make both Marina features work immediately without complex setup
+- [x] Add requestCallByPhone tRPC endpoint for direct phone number input
