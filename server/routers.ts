@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStripeSessionId } from "./db";
 import { publicProcedure, router } from "./trpc";
 import { triggerMarinaCall } from "./elevenlabs";
+import { createCalComBooking } from "./calcom";
 
 export const appRouter = router({
   quotes: router({
@@ -112,6 +113,40 @@ export const appRouter = router({
         return {
           success: true,
           conversationId: result.conversationId,
+        };
+      }),
+
+    // Create Cal.com booking (called by Marina during phone call)
+    createBooking: publicProcedure
+      .input(
+        z.object({
+          customerName: z.string().min(1),
+          customerEmail: z.string().email(),
+          customerPhone: z.string().min(10),
+          startTime: z.string(), // ISO 8601 format in UTC
+          timeZone: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const result = await createCalComBooking({
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          startTime: input.startTime,
+          timeZone: input.timeZone,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create booking');
+        }
+
+        return {
+          success: true,
+          bookingId: result.bookingId,
+          bookingUid: result.bookingUid,
+          startTime: result.startTime,
+          endTime: result.endTime,
+          meetingUrl: result.meetingUrl,
         };
       }),
   }),

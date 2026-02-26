@@ -177,3 +177,15 @@
 - [x] Add booking calendar to thank you page
 - [x] Configure Cal.com with dark theme and cyan brand color
 - [ ] Test booking calendar functionality after deployment
+
+## ElevenLabs Marina to Cal.com Integration
+- [x] Research Cal.com API for creating bookings programmatically
+- [x] Get Cal.com API key from user account
+- [x] Create webhook endpoint to handle booking requests from Marina (marina.createBooking)
+- [x] Implement Cal.com booking creation in backend (server/calcom.ts)
+- [x] Add CALCOM_API_KEY and CALCOM_EVENT_TYPE_ID environment variables
+- [x] Install axios dependency for API calls
+- [ ] Configure Marina agent in ElevenLabs with function calling tool
+- [ ] Update Marina agent context with booking collection instructions
+- [ ] Test complete flow: call → Marina collects info → booking created in Cal.com
+- [ ] Verify booking appears in Cal.com dashboard
