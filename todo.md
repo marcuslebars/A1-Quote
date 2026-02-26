@@ -211,3 +211,12 @@
 - [x] Pass quote_total, boat details, and services to Marina call request
 - [x] Pre-fill customer name and phone from quote data
 - [ ] Test that Marina mentions correct estimate amount instead of $0 after deployment
+
+## Fix Boat Length Showing as 0 in Marina Calls
+- [x] Investigate why boatLength is 0 or undefined
+- [x] Check if quote data is being fetched correctly on thank you page
+- [x] Verify boatLength is being passed to requestCallByPhone mutation
+- [x] Add console logging throughout the data flow
+- [x] Add debug display on thank you page to show quote data
+- [x] Ensure boatLength is converted to Number before sending
+- [ ] Test that Marina mentions correct boat size after deployment

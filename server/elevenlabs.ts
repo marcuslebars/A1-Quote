@@ -39,6 +39,15 @@ export async function triggerMarinaCall(
       : `+1${phoneNumber.replace(/\D/g, '')}`;
 
     console.log('[ElevenLabs] Triggering call to:', formattedPhone);
+    console.log('[ElevenLabs] Context data:', context);
+    console.log('[ElevenLabs] Dynamic variables:', {
+      customer_name: context?.customerName || 'valued customer',
+      boat_length: context?.boatLength || 0,
+      boat_type: context?.boatType || 'boat',
+      services_selected: context?.servicesSelected || 'boat detailing services',
+      quote_total: context?.quoteTotal || 0,
+      deposit_amount: context?.depositAmount || 0,
+    });
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/convai/twilio/outbound-call`,

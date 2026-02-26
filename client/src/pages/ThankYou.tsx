@@ -37,6 +37,7 @@ export default function ThankYou() {
   // Update quote data when fetched
   useEffect(() => {
     if (quote) {
+      console.log('[ThankYou] Quote data loaded:', quote);
       setQuoteData(quote);
       // Pre-fill customer name if available
       if (quote.fullName) {
@@ -78,10 +79,19 @@ export default function ThankYou() {
     }
     
     // Pass customer context to Marina
-    requestCall.mutate({ 
+    console.log('[ThankYou] Requesting call with context:', {
       phoneNumber: phoneNumber.trim(),
       customerName: customerName.trim(),
       boatLength: quoteData?.boatLength,
+      boatType: quoteData?.boatType,
+      quoteTotal: quoteData?.total || quoteData?.subtotal,
+      depositAmount: quoteData?.depositAmount || 250,
+    });
+    
+    requestCall.mutate({ 
+      phoneNumber: phoneNumber.trim(),
+      customerName: customerName.trim(),
+      boatLength: quoteData?.boatLength ? Number(quoteData.boatLength) : undefined,
       boatType: quoteData?.boatType,
       servicesSelected: quoteData?.services ? JSON.stringify(quoteData.services) : undefined,
       quoteTotal: quoteData?.total || quoteData?.subtotal,
@@ -111,6 +121,22 @@ export default function ThankYou() {
       {/* Main Content */}
       <main className="flex-1 container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
+          {/* Debug: Show quote data if available */}
+          {quoteData && (
+            <Card className="bg-gray-900/50 border-cyan-400/30">
+              <CardHeader>
+                <CardTitle className="text-cyan-400 text-sm">Quote Details (Debug)</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-gray-400 font-mono">
+                <div>Boat: {quoteData.boatLength}ft {quoteData.boatType}</div>
+                <div>Total: ${(quoteData.total / 100).toFixed(2)}</div>
+                <div>Deposit: ${(quoteData.depositAmount / 100).toFixed(2)}</div>
+                <div>Customer: {quoteData.fullName}</div>
+                <div>Phone: {quoteData.phone}</div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Success Message */}
           <div className="text-center space-y-6">
             <div className="relative inline-block">

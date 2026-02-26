@@ -111,6 +111,8 @@ export const appRouter = router({
         depositAmount: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
+        console.log('[Marina] requestCallByPhone received:', input);
+        
         // Trigger ElevenLabs call with provided phone number and context
         const result = await triggerMarinaCall(input.phoneNumber, {
           customerName: input.customerName,
