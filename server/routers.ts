@@ -101,10 +101,25 @@ export const appRouter = router({
 
     // Request a call from Marina (using phone number directly)
     requestCallByPhone: publicProcedure
-      .input(z.object({ phoneNumber: z.string().min(10) }))
+      .input(z.object({ 
+        phoneNumber: z.string().min(10),
+        customerName: z.string().optional(),
+        boatLength: z.number().optional(),
+        boatType: z.string().optional(),
+        servicesSelected: z.string().optional(),
+        quoteTotal: z.number().optional(),
+        depositAmount: z.number().optional(),
+      }))
       .mutation(async ({ input }) => {
-        // Trigger ElevenLabs call with provided phone number
-        const result = await triggerMarinaCall(input.phoneNumber);
+        // Trigger ElevenLabs call with provided phone number and context
+        const result = await triggerMarinaCall(input.phoneNumber, {
+          customerName: input.customerName,
+          boatLength: input.boatLength,
+          boatType: input.boatType,
+          servicesSelected: input.servicesSelected,
+          quoteTotal: input.quoteTotal,
+          depositAmount: input.depositAmount,
+        });
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to trigger Marina call');

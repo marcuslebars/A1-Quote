@@ -7,7 +7,19 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID;
 const ELEVENLABS_PHONE_NUMBER_ID = process.env.ELEVENLABS_PHONE_NUMBER_ID;
 
-export async function triggerMarinaCall(phoneNumber: string) {
+interface MarinaCallContext {
+  customerName?: string;
+  boatLength?: number;
+  boatType?: string;
+  servicesSelected?: string;
+  quoteTotal?: number;
+  depositAmount?: number;
+}
+
+export async function triggerMarinaCall(
+  phoneNumber: string,
+  context?: MarinaCallContext
+) {
   if (!ELEVENLABS_API_KEY || !ELEVENLABS_AGENT_ID || !ELEVENLABS_PHONE_NUMBER_ID) {
     console.error('[ElevenLabs] Missing credentials:', {
       hasApiKey: !!ELEVENLABS_API_KEY,
@@ -40,6 +52,18 @@ export async function triggerMarinaCall(phoneNumber: string) {
           agent_id: ELEVENLABS_AGENT_ID,
           agent_phone_number_id: ELEVENLABS_PHONE_NUMBER_ID,
           to_number: formattedPhone,
+          ...(context && {
+            conversation_initiation_client_data: {
+              dynamic_variables: {
+                customer_name: context.customerName || 'valued customer',
+                boat_length: context.boatLength || 0,
+                boat_type: context.boatType || 'boat',
+                services_selected: context.servicesSelected || 'boat detailing services',
+                quote_total: context.quoteTotal || 0,
+                deposit_amount: context.depositAmount || 0,
+              },
+            },
+          }),
         }),
       }
     );

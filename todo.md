@@ -189,3 +189,11 @@
 - [ ] Update Marina agent context with booking collection instructions
 - [ ] Test complete flow: call → Marina collects info → booking created in Cal.com
 - [ ] Verify booking appears in Cal.com dashboard
+
+## Dynamic Variables for Marina Calls
+- [x] Research ElevenLabs API for passing custom context/variables to conversations (dynamic_variables in conversation_initiation_client_data)
+- [x] Update triggerMarinaCall function to include customer name, services, and quote details
+- [x] Update requestCallByPhone endpoint to accept and pass customer context
+- [x] Update Marina agent instructions with dynamic variable placeholders
+- [ ] Configure Marina agent in ElevenLabs dashboard with updated instructions
+- [ ] Test Marina call with dynamic customer information after deployment
