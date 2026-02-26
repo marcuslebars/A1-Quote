@@ -24,14 +24,23 @@ export default function ThankYou() {
   const [callRequested, setCallRequested] = useState(false);
   const [quoteData, setQuoteData] = useState<any>(null);
 
-  // Get session_id from URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const sessionId = urlParams.get('session_id');
+  // Get quote ID from localStorage (saved when quote was submitted)
+  const [quoteId, setQuoteId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const savedQuoteId = localStorage.getItem('lastQuoteId');
+    if (savedQuoteId) {
+      setQuoteId(savedQuoteId);
+      console.log('[ThankYou] Found quote ID in localStorage:', savedQuoteId);
+    } else {
+      console.warn('[ThankYou] No quote ID found in localStorage');
+    }
+  }, []);
 
-  // Fetch quote data if session_id is available
-  const { data: quote } = trpc.quotes.getBySessionId.useQuery(
-    { sessionId: sessionId || '' },
-    { enabled: !!sessionId }
+  // Fetch quote data using the quote ID
+  const { data: quote, isLoading, error } = trpc.quotes.getById.useQuery(
+    { id: quoteId || '' },
+    { enabled: !!quoteId }
   );
 
   // Update quote data when fetched
@@ -48,6 +57,20 @@ export default function ThankYou() {
       }
     }
   }, [quote]);
+  
+  // Log errors
+  useEffect(() => {
+    if (error) {
+      console.error('[ThankYou] Error loading quote:', error);
+    }
+  }, [error]);
+  
+  // Log loading state
+  useEffect(() => {
+    if (isLoading) {
+      console.log('[ThankYou] Loading quote data...');
+    }
+  }, [isLoading]);
 
   // Initialize Cal.com embed
   useEffect(() => {
@@ -121,21 +144,29 @@ export default function ThankYou() {
       {/* Main Content */}
       <main className="flex-1 container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Debug: Show quote data if available */}
-          {quoteData && (
-            <Card className="bg-gray-900/50 border-cyan-400/30">
-              <CardHeader>
-                <CardTitle className="text-cyan-400 text-sm">Quote Details (Debug)</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-gray-400 font-mono">
-                <div>Boat: {quoteData.boatLength}ft {quoteData.boatType}</div>
-                <div>Total: ${(quoteData.total / 100).toFixed(2)}</div>
-                <div>Deposit: ${(quoteData.depositAmount / 100).toFixed(2)}</div>
-                <div>Customer: {quoteData.fullName}</div>
-                <div>Phone: {quoteData.phone}</div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Debug: Show quote data loading/error/success */}
+          <Card className="bg-gray-900/50 border-cyan-400/30">
+            <CardHeader>
+              <CardTitle className="text-cyan-400 text-sm">Quote Details (Debug)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-gray-400 font-mono space-y-2">
+              <div>Quote ID: {quoteId || 'Not found in localStorage'}</div>
+              {isLoading && <div className="text-yellow-400">Loading quote data...</div>}
+              {error && <div className="text-red-400">Error: {error.message}</div>}
+              {quoteData && (
+                <>
+                  <div>Boat: {quoteData.boatLength}ft {quoteData.boatType}</div>
+                  <div>Total: ${(quoteData.total / 100).toFixed(2)}</div>
+                  <div>Deposit: ${(quoteData.depositAmount / 100).toFixed(2)}</div>
+                  <div>Customer: {quoteData.fullName}</div>
+                  <div>Phone: {quoteData.phone}</div>
+                </>
+              )}
+              {!isLoading && !error && !quoteData && (
+                <div className="text-orange-400">No quote data available</div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Success Message */}
           <div className="text-center space-y-6">

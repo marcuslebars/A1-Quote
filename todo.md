@@ -233,3 +233,12 @@
 - [ ] Add MONGODB_URI environment variable to Railway
 - [ ] Test dashboard with existing quote data after MongoDB is connected
 - [ ] Save checkpoint
+
+## Fix Boat Length Data Not Passing to Marina (Critical)
+- [x] Check Railway logs to see what data Marina is receiving (all fields were undefined)
+- [x] Identified issue: ThankYou page was trying to use session_id from Stripe, but payment links don't provide it
+- [x] Fixed ThankYou page to use localStorage quoteId instead of session_id
+- [x] Added comprehensive logging and debug display
+- [x] Added loading and error states to debug card
+- [ ] Test complete flow after deployment to Railway
+- [ ] Verify Marina receives correct boat length and quote data
