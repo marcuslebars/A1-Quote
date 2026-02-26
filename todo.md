@@ -220,3 +220,16 @@
 - [x] Add debug display on thank you page to show quote data
 - [x] Ensure boatLength is converted to Number before sending
 - [ ] Test that Marina mentions correct boat size after deployment
+
+## Admin Dashboard for Quote Management
+- [x] Design dashboard layout with table view of all quotes
+- [x] Create /admin/dashboard page component
+- [x] Display quote data: customer info, boat details, services, pricing, payment status
+- [x] Add filtering by payment status (paid/unpaid)
+- [x] Add search functionality for customer name/email/phone
+- [x] Show visual indicators for payment status (badges/colors)
+- [x] Add statistics cards (total quotes, paid, unpaid, revenue)
+- [x] Add route to App.tsx
+- [ ] Add MONGODB_URI environment variable to Railway
+- [ ] Test dashboard with existing quote data after MongoDB is connected
+- [ ] Save checkpoint
