@@ -242,3 +242,8 @@
 - [x] Added loading and error states to debug card
 - [ ] Test complete flow after deployment to Railway
 - [ ] Verify Marina receives correct boat length and quote data
+
+## Remove Debug Card from Thank You Page
+- [x] Remove debug card showing quote details from customer view
+- [x] Keep console logging for debugging in Railway logs
+- [ ] Save checkpoint

@@ -144,30 +144,6 @@ export default function ThankYou() {
       {/* Main Content */}
       <main className="flex-1 container py-12">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Debug: Show quote data loading/error/success */}
-          <Card className="bg-gray-900/50 border-cyan-400/30">
-            <CardHeader>
-              <CardTitle className="text-cyan-400 text-sm">Quote Details (Debug)</CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs text-gray-400 font-mono space-y-2">
-              <div>Quote ID: {quoteId || 'Not found in localStorage'}</div>
-              {isLoading && <div className="text-yellow-400">Loading quote data...</div>}
-              {error && <div className="text-red-400">Error: {error.message}</div>}
-              {quoteData && (
-                <>
-                  <div>Boat: {quoteData.boatLength}ft {quoteData.boatType}</div>
-                  <div>Total: ${(quoteData.total / 100).toFixed(2)}</div>
-                  <div>Deposit: ${(quoteData.depositAmount / 100).toFixed(2)}</div>
-                  <div>Customer: {quoteData.fullName}</div>
-                  <div>Phone: {quoteData.phone}</div>
-                </>
-              )}
-              {!isLoading && !error && !quoteData && (
-                <div className="text-orange-400">No quote data available</div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Success Message */}
           <div className="text-center space-y-6">
             <div className="relative inline-block">
