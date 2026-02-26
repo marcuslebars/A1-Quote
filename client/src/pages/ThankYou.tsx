@@ -20,6 +20,7 @@ const ELEVENLABS_AGENT_ID = "agent_7701kgqf82xyekdafeh4mqvae127";
 
 export default function ThankYou() {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [callRequested, setCallRequested] = useState(false);
 
   // Initialize Cal.com embed
@@ -46,7 +47,22 @@ export default function ThankYou() {
       alert('Please enter a valid phone number');
       return;
     }
-    requestCall.mutate({ phoneNumber: phoneNumber.trim() });
+    if (!customerName || customerName.trim().length < 2) {
+      alert('Please enter your name');
+      return;
+    }
+    
+    // Pass customer context to Marina
+    requestCall.mutate({ 
+      phoneNumber: phoneNumber.trim(),
+      customerName: customerName.trim(),
+      // These will be undefined for now, but Marina will still greet by name
+      boatLength: undefined,
+      boatType: undefined,
+      servicesSelected: undefined,
+      quoteTotal: undefined,
+      depositAmount: 250, // We know they paid $250 deposit
+    });
   };
 
   return (
@@ -180,6 +196,18 @@ export default function ThankYou() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-gray-300">Your Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="John Smith"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        className="bg-gray-800 border-gray-700 text-white"
+                        disabled={callRequested}
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-gray-300">Your Phone Number</Label>
                       <Input

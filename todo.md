@@ -197,3 +197,10 @@
 - [x] Update Marina agent instructions with dynamic variable placeholders
 - [ ] Configure Marina agent in ElevenLabs dashboard with updated instructions
 - [ ] Test Marina call with dynamic customer information after deployment
+
+## Fix Dynamic Variables Not Passing to Marina
+- [x] Check ThankYou page Request Call button implementation
+- [x] Update frontend to pass customer data (name, boat details, services) to requestCallByPhone
+- [x] Add customer name input field to Request Call form
+- [ ] Test that variables are correctly passed to ElevenLabs API after deployment
+- [ ] Verify Marina greets customer by name instead of "valued customer"
