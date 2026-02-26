@@ -204,3 +204,10 @@
 - [x] Add customer name input field to Request Call form
 - [ ] Test that variables are correctly passed to ElevenLabs API after deployment
 - [ ] Verify Marina greets customer by name instead of "valued customer"
+
+## Add Quote Total to Marina Variables
+- [x] Check if session_id is available in thank you page URL
+- [x] Fetch quote data using session_id to get quote total
+- [x] Pass quote_total, boat details, and services to Marina call request
+- [x] Pre-fill customer name and phone from quote data
+- [ ] Test that Marina mentions correct estimate amount instead of $0 after deployment

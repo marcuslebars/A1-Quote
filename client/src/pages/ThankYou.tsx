@@ -22,6 +22,31 @@ export default function ThankYou() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [callRequested, setCallRequested] = useState(false);
+  const [quoteData, setQuoteData] = useState<any>(null);
+
+  // Get session_id from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionId = urlParams.get('session_id');
+
+  // Fetch quote data if session_id is available
+  const { data: quote } = trpc.quotes.getBySessionId.useQuery(
+    { sessionId: sessionId || '' },
+    { enabled: !!sessionId }
+  );
+
+  // Update quote data when fetched
+  useEffect(() => {
+    if (quote) {
+      setQuoteData(quote);
+      // Pre-fill customer name if available
+      if (quote.fullName) {
+        setCustomerName(quote.fullName);
+      }
+      if (quote.phone) {
+        setPhoneNumber(quote.phone);
+      }
+    }
+  }, [quote]);
 
   // Initialize Cal.com embed
   useEffect(() => {
@@ -56,12 +81,11 @@ export default function ThankYou() {
     requestCall.mutate({ 
       phoneNumber: phoneNumber.trim(),
       customerName: customerName.trim(),
-      // These will be undefined for now, but Marina will still greet by name
-      boatLength: undefined,
-      boatType: undefined,
-      servicesSelected: undefined,
-      quoteTotal: undefined,
-      depositAmount: 250, // We know they paid $250 deposit
+      boatLength: quoteData?.boatLength,
+      boatType: quoteData?.boatType,
+      servicesSelected: quoteData?.services ? JSON.stringify(quoteData.services) : undefined,
+      quoteTotal: quoteData?.total || quoteData?.subtotal,
+      depositAmount: quoteData?.depositAmount || 250,
     });
   };
 
