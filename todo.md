@@ -276,3 +276,8 @@
 - [x] Handle BOOKING_CANCELLED event in /api/marina/calcom-webhook
 - [x] Marina calls customer with cancellation-specific context (reason to call, re-book prompt)
 - [ ] Save checkpoint
+
+## BOOKING_REMINDER Webhook — Marina 24-Hour Confirmation Call
+- [x] Handle BOOKING_REMINDER event in /api/marina/calcom-webhook
+- [x] Marina calls customer with reminder-specific context (appointment tomorrow, confirm boat accessible, ask for gate codes/slip number)
+- [ ] Save checkpoint

@@ -128,8 +128,12 @@ router.post('/calcom-webhook', async (req, res) => {
 
     const triggerEvent = payload?.triggerEvent;
 
-    // Only handle BOOKING_CREATED and BOOKING_CANCELLED events
-    if (triggerEvent !== 'BOOKING_CREATED' && triggerEvent !== 'BOOKING_CANCELLED') {
+    // Only handle BOOKING_CREATED, BOOKING_CANCELLED, and BOOKING_REMINDER events
+    if (
+      triggerEvent !== 'BOOKING_CREATED' &&
+      triggerEvent !== 'BOOKING_CANCELLED' &&
+      triggerEvent !== 'BOOKING_REMINDER'
+    ) {
       return res.json({ received: true, action: 'ignored' });
     }
 
@@ -207,7 +211,7 @@ router.post('/calcom-webhook', async (req, res) => {
         depositAmount: 250,
         servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — appointment confirmed for ${bookingDate}`,
       };
-    } else {
+    } else if (triggerEvent === 'BOOKING_CANCELLED') {
       // BOOKING_CANCELLED — Marina calls to understand why and attempt to re-book
       console.log('[Cal.com Webhook] BOOKING_CANCELLED — triggering re-booking call for:', customerName);
       callContext = {
@@ -217,6 +221,17 @@ router.post('/calcom-webhook', async (req, res) => {
         quoteTotal: quoteContext.quoteTotal,
         depositAmount: 250,
         servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — CANCELLED appointment was on ${bookingDate}. Purpose of this call: understand why the customer cancelled and offer to reschedule at a more convenient time.`,
+      };
+    } else {
+      // BOOKING_REMINDER — Marina calls 24 hours before to confirm boat accessibility
+      console.log('[Cal.com Webhook] BOOKING_REMINDER — triggering 24-hour reminder call for:', customerName);
+      callContext = {
+        customerName,
+        boatLength: quoteContext.boatLength,
+        boatType: quoteContext.boatType,
+        quoteTotal: quoteContext.quoteTotal,
+        depositAmount: 250,
+        servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — appointment is TOMORROW on ${bookingDate}. Purpose of this call: remind the customer their service is tomorrow, confirm the boat will be accessible at the marina, ask for any gate codes or slip numbers needed, and confirm the service location address. Keep the call brief and friendly.`,
       };
     }
 
