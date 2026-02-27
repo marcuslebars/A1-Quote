@@ -1,10 +1,51 @@
 import Cal, { getCalApi } from "@calcom/embed-react";
-import { Calendar, CheckCircle, Mail, Phone, Send, Bot, User } from "lucide-react";
+import { Calendar, CheckCircle, ChevronDown, Mail, Phone, Send, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useRef, useState } from "react";
+
+/** Build a Google Calendar "Add to Calendar" URL */
+function buildGoogleCalendarUrl(startTime: string, endTime: string, title: string, description: string, location: string) {
+  const fmt = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${fmt(startTime)}/${fmt(endTime || startTime)}`,
+    details: description,
+    location,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+/** Build and trigger an iCal (.ics) file download */
+function downloadIcal(startTime: string, endTime: string, title: string, description: string, location: string) {
+  const fmt = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const uid = `a1marine-${Date.now()}@a1marinecare.ca`;
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//A1 Marine Care//Booking//EN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${fmt(new Date().toISOString())}`,
+    `DTSTART:${fmt(startTime)}`,
+    `DTEND:${fmt(endTime || startTime)}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
+    `LOCATION:${location}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'a1-marine-care-appointment.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /**
  * Design Philosophy: Modern Marine Elegance
@@ -99,7 +140,21 @@ export default function ThankYou() {
   const [isSending, setIsSending] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<{ startTime: string; endTime: string; bookingUid?: string } | null>(null);
+  const [calendarMenuOpen, setCalendarMenuOpen] = useState(false);
+  const calendarMenuRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Close the calendar dropdown when clicking outside
+  useEffect(() => {
+    if (!calendarMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (calendarMenuRef.current && !calendarMenuRef.current.contains(e.target as Node)) {
+        setCalendarMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [calendarMenuOpen]);
 
   const chatMutation = trpc.booking.chat.useMutation({
     onSuccess: (data) => {
@@ -291,32 +346,101 @@ export default function ThankYou() {
                     </div>
                   </div>
 
-                  {/* Footer: Marina note + reschedule link */}
+                  {/* Footer: Add to Calendar + Reschedule */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <p className="text-gray-400 text-sm">
                       Marina will call you shortly to confirm the details.
                     </p>
-                    {bookingDetails.bookingUid ? (
-                      <a
-                        href={`https://cal.com/reschedule/${bookingDetails.bookingUid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        Reschedule Appointment
-                      </a>
-                    ) : (
-                      <a
-                        href="https://cal.com/a1-marine-care/book-your-service"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        Manage Appointment
-                      </a>
-                    )}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {/* Add to Calendar dropdown */}
+                      <div className="relative" ref={calendarMenuRef}>
+                        <button
+                          onClick={() => setCalendarMenuOpen(prev => !prev)}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-[#00FFFF] text-black hover:bg-[#00CCCC] transition-colors whitespace-nowrap"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          Add to Calendar
+                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${calendarMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {calendarMenuOpen && (
+                          <div className="absolute right-0 mt-1 w-48 rounded-lg bg-gray-900 border border-gray-700 shadow-xl z-20 overflow-hidden">
+                            <a
+                              href={buildGoogleCalendarUrl(
+                                bookingDetails.startTime,
+                                bookingDetails.endTime,
+                                'A1 Marine Care – Boat Detailing Service',
+                                `Your boat detailing appointment with A1 Marine Care.\nQuote ref: ${quoteId || ''}`,
+                                quoteData?.location || 'Marina'
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setCalendarMenuOpen(false)}
+                              className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 transition-colors"
+                            >
+                              {/* Google Calendar colour icon */}
+                              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.5 3H6.5C4.567 3 3 4.567 3 6.5v11C3 19.433 4.567 21 6.5 21h11c1.933 0 3.5-1.567 3.5-3.5v-11C21 4.567 19.433 3 17.5 3z" fill="#fff"/>
+                                <path d="M17.5 3H6.5C4.567 3 3 4.567 3 6.5V8h18V6.5C21 4.567 19.433 3 17.5 3z" fill="#4285F4"/>
+                                <path d="M3 8v9.5C3 19.433 4.567 21 6.5 21H8V8H3z" fill="#34A853"/>
+                                <path d="M16 21h1.5c1.933 0 3.5-1.567 3.5-3.5V8h-5v13z" fill="#FBBC04"/>
+                                <path d="M8 8v13h8V8H8z" fill="#EA4335"/>
+                                <path d="M8 8V3H6.5C4.567 3 3 4.567 3 6.5V8h5z" fill="#188038"/>
+                                <path d="M21 8h-5V3h1.5C19.433 3 21 4.567 21 6.5V8z" fill="#1967D2"/>
+                                <text x="12" y="17" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#4285F4">G</text>
+                              </svg>
+                              Google Calendar
+                            </a>
+                            <button
+                              onClick={() => {
+                                downloadIcal(
+                                  bookingDetails.startTime,
+                                  bookingDetails.endTime,
+                                  'A1 Marine Care – Boat Detailing Service',
+                                  `Your boat detailing appointment with A1 Marine Care.\nQuote ref: ${quoteId || ''}`,
+                                  quoteData?.location || 'Marina'
+                                );
+                                setCalendarMenuOpen(false);
+                              }}
+                              className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-gray-200 hover:bg-gray-800 transition-colors border-t border-gray-700"
+                            >
+                              {/* Generic calendar icon for iCal/Outlook */}
+                              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="4" width="18" height="17" rx="2" fill="#0078D4"/>
+                                <rect x="3" y="4" width="18" height="5" rx="2" fill="#0078D4"/>
+                                <rect x="3" y="7" width="18" height="2" fill="#005A9E"/>
+                                <rect x="7" y="2" width="2" height="4" rx="1" fill="#fff"/>
+                                <rect x="15" y="2" width="2" height="4" rx="1" fill="#fff"/>
+                                <text x="12" y="18" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">ICS</text>
+                              </svg>
+                              Apple / Outlook (.ics)
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Reschedule link */}
+                      {bookingDetails.bookingUid ? (
+                        <a
+                          href={`https://cal.com/reschedule/${bookingDetails.bookingUid}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          Reschedule
+                        </a>
+                      ) : (
+                        <a
+                          href="https://cal.com/a1-marine-care/book-your-service"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          Manage
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
