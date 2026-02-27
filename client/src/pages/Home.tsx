@@ -34,6 +34,9 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Home() {
+  // Test mode: enabled by visiting ?test=true in the URL — never shown to customers
+  const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true';
+
   // Quote submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitQuote = trpc.quotes.submit.useMutation();
@@ -865,8 +868,12 @@ export default function Home() {
                             // Store quote ID in localStorage for thank you page
                             localStorage.setItem('lastQuoteId', result.quoteId.toString());
                             
-                            // Redirect to Stripe payment
-                            window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                            // Redirect to Stripe payment (or bypass in test mode)
+                            if (isTestMode) {
+                              window.location.href = '/thank-you';
+                            } else {
+                              window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                            }
                           } catch (error) {
                             console.error('Failed to submit quote:', error);
                             alert('Failed to submit quote. Please try again.');
@@ -919,8 +926,12 @@ export default function Home() {
                         // Store quote ID in localStorage for thank you page
                         localStorage.setItem('lastQuoteId', result.quoteId.toString());
                         
-                        // Redirect to Stripe payment
-                        window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                        // Redirect to Stripe payment (or bypass in test mode)
+                        if (isTestMode) {
+                          window.location.href = '/thank-you';
+                        } else {
+                          window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                        }
                       } catch (error) {
                         console.error('Failed to submit quote:', error);
                         alert('Failed to submit quote. Please try again.');

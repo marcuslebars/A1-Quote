@@ -251,3 +251,9 @@
 ## Update Stripe Payment Link
 - [x] Update Stripe payment link to new URL: https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01
 - [ ] Save checkpoint
+
+## Test Mode Bypass for Stripe Checkout
+- [x] Add test mode that skips Stripe and goes directly to thank you page
+- [x] Only active when ?test=true URL parameter is present (hidden from customers)
+- [x] Saves quote to database normally, just skips Stripe redirect
+- [ ] Save checkpoint
