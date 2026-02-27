@@ -1,3 +1,4 @@
+import Cal, { getCalApi } from "@calcom/embed-react";
 import { Calendar, CheckCircle, Mail, Phone, Send, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -16,6 +17,40 @@ import { useEffect, useRef, useState } from "react";
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+}
+
+function CalEmbed({ customerName, customerEmail }: { customerName?: string; customerEmail?: string }) {
+  useEffect(() => {
+    (async function () {
+      const cal = await getCalApi({ namespace: 'book-your-service' });
+      cal('ui', {
+        theme: 'dark',
+        cssVarsPerTheme: {
+          light: { 'cal-brand': '#000000' },
+          dark: { 'cal-brand': '#00ffff' },
+        },
+        hideEventTypeDetails: true,
+        layout: 'month_view',
+      });
+    })();
+  }, []);
+
+  const config: Record<string, string> = {
+    layout: 'month_view',
+    useSlotsViewOnSmallScreen: 'true',
+    theme: 'dark',
+  };
+  if (customerName) config.name = customerName;
+  if (customerEmail) config.email = customerEmail;
+
+  return (
+    <Cal
+      namespace="book-your-service"
+      calLink="a1-marine-care/book-your-service"
+      style={{ width: '100%', height: '600px', overflow: 'scroll' }}
+      config={config}
+    />
+  );
 }
 
 export default function ThankYou() {
@@ -285,6 +320,25 @@ export default function ThankYou() {
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Cal.com Booking Calendar */}
+          <Card className="bg-gray-900/50 border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#00FFFF]" />
+                Book Your Service Date
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Prefer to book directly? Select a date and time below
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 overflow-hidden rounded-b-lg">
+              <CalEmbed
+                customerName={quoteData?.fullName}
+                customerEmail={quoteData?.email}
+              />
             </CardContent>
           </Card>
 

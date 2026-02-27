@@ -297,3 +297,9 @@
 - [x] Fix Cal.com booking not being created (regex now correctly matches multi-line JSON signal)
 - [x] Update thank you page accent color to #00FFFF (brand cyan, replaced all cyan-400 Tailwind classes)
 - [ ] Save checkpoint
+
+## Cal.com Calendar Embed on Thank You Page
+- [x] Add Cal.com inline embed below the chat interface on the thank you page
+- [x] Pre-fill customer name and email from quote data
+- [x] Style to match dark brand aesthetic (dark theme, #00FFFF brand color)
+- [ ] Save checkpoint
