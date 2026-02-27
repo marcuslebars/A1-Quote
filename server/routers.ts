@@ -216,28 +216,47 @@ Instructions:
             console.log('[Booking Chat] Extracted JSON string:', jsonStr);
             const bookingData = JSON.parse(jsonStr);
             console.log('[Booking Chat] Parsed booking data:', bookingData);
-            const bookingResult = await createCalComBooking({
-              customerName: bookingData.customerName,
-              customerEmail: bookingData.customerEmail,
-              customerPhone: bookingData.customerPhone,
-              startTime: bookingData.startTime,
-              timeZone: tz,
-            });
+            let bookingResult: Awaited<ReturnType<typeof createCalComBooking>>;
+            try {
+              bookingResult = await createCalComBooking({
+                customerName: bookingData.customerName,
+                customerEmail: bookingData.customerEmail,
+                customerPhone: bookingData.customerPhone,
+                startTime: bookingData.startTime,
+                timeZone: tz,
+              });
+            } catch (calErr: any) {
+              console.error('[Booking Chat] Cal.com threw an exception:', calErr.message);
+              bookingResult = { success: false, error: calErr.message } as any;
+            }
             console.log('[Booking Chat] Cal.com booking result:', bookingResult);
 
-            // Strip the raw BOOKING_CONFIRMED line from the reply
+            if (!bookingResult.success) {
+              // Cal.com call failed — do NOT show Claude's premature "confirmed" message.
+              // Instead return an honest apology so the customer knows to try again.
+              const errorDetail = (bookingResult as any).error || 'unknown error';
+              console.error('[Booking Chat] Booking failed, returning honest error to customer. Detail:', errorDetail);
+              return {
+                reply: "I'm sorry, I wasn't able to complete your booking right now due to a technical issue. Please try again in a moment, or contact us directly at (705) 996-1010 or contact@a1marinecare.ca and we'll get you booked straight away.",
+                booked: false,
+                bookingDetails: null,
+                bookingError: errorDetail,
+              };
+            }
+
+            // Booking succeeded — strip the raw signal line and return the clean reply
             const cleanContent = content.slice(0, signalIndex).trim() + '\n' + content.slice(jsonEnd + 1).trim();
 
             return {
               reply: cleanContent.trim(),
-              booked: bookingResult.success,
-              bookingDetails: bookingResult.success ? {
-                bookingId: bookingResult.bookingId,
-                bookingUid: bookingResult.bookingUid,
-                startTime: bookingResult.startTime,
-                endTime: bookingResult.endTime,
-              } : null,
-              bookingError: bookingResult.success ? null : (bookingResult as any).error,
+              booked: true,
+              bookingDetails: {
+                bookingId: (bookingResult as any).bookingId,
+                bookingUid: (bookingResult as any).bookingUid,
+                startTime: (bookingResult as any).startTime,
+                endTime: (bookingResult as any).endTime,
+              },
+              bookingError: null,
             };
           } catch (parseErr) {
             console.error('[Booking Chat] Failed to parse booking data:', parseErr);
