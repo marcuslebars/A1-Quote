@@ -257,3 +257,17 @@
 - [x] Only active when ?test=true URL parameter is present (hidden from customers)
 - [x] Saves quote to database normally, just skips Stripe redirect
 - [ ] Save checkpoint
+
+## AI Booking Chat on Thank You Page
+- [x] Create Cal.com getAvailability tRPC procedure (GET /slots)
+- [x] Create Cal.com booking.chat AI procedure (LLM + availability + booking)
+- [x] Build AI chat interface with LLM that parses date/time requests
+- [x] AI presents available slots and waits for customer confirmation
+- [x] AI books confirmed slot via Cal.com API when customer confirms
+- [x] Remove "Request a Call" section from thank you page
+- [x] Add Cal.com BOOKING_CREATED webhook at /api/marina/calcom-webhook
+- [x] Marina call includes customer name, phone, booking date/time, and quote details
+- [x] Create server/llm.ts helper using OpenAI-compatible proxy
+- [ ] Test full flow end-to-end after deployment
+- [ ] Configure Cal.com webhook URL in Cal.com dashboard
+- [ ] Save checkpoint

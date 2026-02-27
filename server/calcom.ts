@@ -65,6 +65,51 @@ export async function createCalComBooking(params: CreateBookingParams) {
 }
 
 /**
+ * Get available time slots for a given date range
+ */
+export async function getCalComAvailability(params: {
+  startTime: string; // ISO 8601 UTC
+  endTime: string;   // ISO 8601 UTC
+  timeZone?: string;
+}) {
+  if (!CALCOM_API_KEY || !CALCOM_EVENT_TYPE_ID) {
+    throw new Error('CALCOM_API_KEY or CALCOM_EVENT_TYPE_ID is not set');
+  }
+
+  try {
+    const response = await axios.get(`${CALCOM_API_URL}/slots/available`, {
+      headers: {
+        Authorization: `Bearer ${CALCOM_API_KEY}`,
+        'cal-api-version': '2024-09-04',
+      },
+      params: {
+        startTime: params.startTime,
+        endTime: params.endTime,
+        eventTypeId: CALCOM_EVENT_TYPE_ID,
+        timeZone: params.timeZone || 'America/Toronto',
+      },
+    });
+
+    // Response is { data: { slots: { "YYYY-MM-DD": [{ time: "ISO" }, ...] } } }
+    const slots: Record<string, { time: string }[]> = response.data?.data?.slots || {};
+
+    // Flatten into a sorted array of ISO strings
+    const available: string[] = [];
+    for (const daySlots of Object.values(slots)) {
+      for (const slot of daySlots) {
+        available.push(slot.time);
+      }
+    }
+    available.sort();
+
+    return { success: true, slots: available };
+  } catch (error: any) {
+    console.error('[Cal.com] Availability fetch failed:', error.response?.data || error.message);
+    return { success: false, slots: [], error: error.response?.data?.message || error.message };
+  }
+}
+
+/**
  * Test function to verify Cal.com API credentials
  */
 export async function testCalComConnection() {

@@ -1,5 +1,6 @@
 import express from 'express';
 import { getQuoteByPhone } from './db';
+import { triggerMarinaCall } from './elevenlabs';
 
 const router = express.Router();
 
@@ -109,6 +110,115 @@ router.post('/context', async (req, res) => {
         message: 'Please proceed with general inquiry'
       }
     });
+  }
+});
+
+/**
+ * Cal.com BOOKING_CREATED Webhook
+ * 
+ * Cal.com calls this endpoint when a new booking is created.
+ * We trigger a Marina AI call to welcome the customer and confirm details.
+ * 
+ * Set this URL in Cal.com: https://your-domain/api/marina/calcom-webhook
+ */
+router.post('/calcom-webhook', async (req, res) => {
+  try {
+    const payload = req.body;
+    console.log('[Cal.com Webhook] Received event:', payload?.triggerEvent);
+
+    // Only handle BOOKING_CREATED events
+    if (payload?.triggerEvent !== 'BOOKING_CREATED') {
+      return res.json({ received: true, action: 'ignored' });
+    }
+
+    const booking = payload.payload;
+    if (!booking) {
+      console.warn('[Cal.com Webhook] No payload data');
+      return res.json({ received: true, action: 'no_payload' });
+    }
+
+    // Extract attendee info (first attendee is the customer)
+    const attendee = booking.attendees?.[0];
+    if (!attendee) {
+      console.warn('[Cal.com Webhook] No attendee found in booking');
+      return res.json({ received: true, action: 'no_attendee' });
+    }
+
+    const customerPhone = attendee.phoneNumber || attendee.phone;
+    const customerName = attendee.name;
+    const startTime = booking.startTime;
+    const endTime = booking.endTime;
+
+    if (!customerPhone) {
+      console.warn('[Cal.com Webhook] No phone number for attendee:', customerName);
+      return res.json({ received: true, action: 'no_phone' });
+    }
+
+    // Format the booking date/time for Marina
+    const bookingDate = startTime
+      ? new Date(startTime).toLocaleString('en-CA', {
+          timeZone: attendee.timeZone || 'America/Toronto',
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          hour: 'numeric', minute: '2-digit', hour12: true,
+        })
+      : 'your scheduled date';
+
+    // Look up quote context for this customer
+    let quoteContext: {
+      boatLength?: number;
+      boatType?: string;
+      servicesSelected?: string;
+      quoteTotal?: number;
+    } = {};
+    try {
+      const quote = await getQuoteByPhone(customerPhone);
+      if (quote) {
+        const services: string[] = [];
+        const s = quote.services || {};
+        if (s.gelcoat) services.push('Gelcoat Restoration');
+        if (s.exterior) services.push('Exterior Detailing');
+        if (s.interior) services.push('Interior Detailing');
+        if (s.ceramic) services.push('Ceramic Coating');
+        if (s.graphene) services.push('Graphene Coating');
+        if (s.wetSanding) services.push('Wet Sanding');
+        if (s.bottomPainting) services.push('Bottom Painting');
+        if (s.vinyl) services.push('Vinyl Work');
+        quoteContext = {
+          boatLength: quote.boatLength,
+          boatType: quote.boatType,
+          servicesSelected: services.join(', ') || 'boat detailing services',
+          quoteTotal: quote.total,
+        };
+      }
+    } catch (e) {
+      console.warn('[Cal.com Webhook] Could not fetch quote for phone:', customerPhone);
+    }
+
+    console.log('[Cal.com Webhook] Triggering Marina call for:', customerName, customerPhone);
+
+    const callResult = await triggerMarinaCall(customerPhone, {
+      customerName,
+      boatLength: quoteContext.boatLength,
+      boatType: quoteContext.boatType,
+      servicesSelected: quoteContext.servicesSelected,
+      quoteTotal: quoteContext.quoteTotal,
+      depositAmount: 250,
+      // Pass booking date as part of services context so Marina knows the appointment
+      ...(startTime && {
+        servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — appointment on ${bookingDate}`,
+      }),
+    });
+
+    if (callResult.success) {
+      console.log('[Cal.com Webhook] Marina call triggered successfully:', callResult.conversationId);
+    } else {
+      console.error('[Cal.com Webhook] Marina call failed:', callResult.error);
+    }
+
+    res.json({ received: true, action: 'call_triggered', success: callResult.success });
+  } catch (error) {
+    console.error('[Cal.com Webhook] Error:', error);
+    res.status(500).json({ received: false, error: 'Internal server error' });
   }
 });
 
