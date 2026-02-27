@@ -284,8 +284,9 @@
 
 ## Fix Booking Chatbot Error — Switch to Claude
 - [x] Diagnose error: llm.ts was using OPENAI_API_KEY which is not set in Railway
-- [x] Rewrite llm.ts to use Anthropic Claude API (claude-3-haiku-20240307)
+- [x] Rewrite llm.ts to use Anthropic Claude API
+- [x] Updated model to claude-sonnet-4-5 (validated successfully)
 - [x] Write purpose-built system prompt for A1 Marine Care booking assistant
-- [x] Add ANTHROPIC_API_KEY to environment (validated successfully)
+- [x] Add ANTHROPIC_API_KEY to environment
 - [ ] Test chatbot flow end-to-end after deployment
 - [ ] Save checkpoint

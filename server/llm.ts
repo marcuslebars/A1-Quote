@@ -4,7 +4,7 @@
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const CLAUDE_MODEL = 'claude-3-haiku-20240307'; // Fast, cost-effective, great for conversational tasks
+const CLAUDE_MODEL = 'claude-sonnet-4-5'; // Claude Sonnet 4.5 — high-quality conversational model
 
 export interface LLMMessage {
   role: 'user' | 'assistant';
