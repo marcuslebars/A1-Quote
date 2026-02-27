@@ -135,7 +135,33 @@ export const appRouter = router({
           try {
             const q = await getQuoteById(input.quoteId);
             if (q) {
-              quoteContext = `Customer quote: ${q.boatLength}ft ${q.boatType}, services: ${JSON.stringify(q.services?.config || {})}, total: $${((q.total || 0) / 100).toFixed(2)}, name: ${q.fullName}, email: ${q.email}, phone: ${q.phone}.`;
+              // Format services into a readable list
+              const serviceNames: string[] = [];
+              if (q.services) {
+                const svc = q.services as Record<string, any>;
+                if (svc.gelcoat) serviceNames.push(`Gelcoat Restoration (${svc.gelcoat.area || 'hull'})`);
+                if (svc.exterior) serviceNames.push(`Exterior Detailing (${svc.exterior.tier || 'standard'} tier)`);
+                if (svc.interior) serviceNames.push(`Interior Detailing (${svc.interior.tier || 'standard'} tier)`);
+                if (svc.ceramic) serviceNames.push('Ceramic Coating');
+                if (svc.graphene) serviceNames.push('Graphene Coating');
+                if (svc.wetSanding) serviceNames.push('Wet Sanding');
+                if (svc.bottomPainting) serviceNames.push('Bottom Painting');
+                if (svc.vinyl) serviceNames.push(`Vinyl Wrap (${svc.vinyl.service || 'removal'})`);
+              }
+              const servicesStr = serviceNames.length > 0 ? serviceNames.join(', ') : 'boat detailing services';
+              // total is stored in dollars (not cents)
+              const totalStr = q.total > 0 ? `$${q.total.toFixed(2)}` : 'to be confirmed';
+              quoteContext = `CUSTOMER QUOTE DETAILS:
+- Customer name: ${q.fullName}
+- Email: ${q.email}
+- Phone: ${q.phone}
+- Boat: ${q.boatLength}ft ${q.boatType}
+- Service location: ${q.location}
+- Services booked: ${servicesStr}
+- Quote total: ${totalStr}
+- Deposit paid: $${q.depositAmount || 250}.00
+
+Use the customer's actual name, phone, email, and services listed above. Do NOT invent or guess any service details.`;
             }
           } catch {}
         }
@@ -167,10 +193,14 @@ Instructions:
         const content: string = llmResponse.choices?.[0]?.message?.content || 'I apologize, I could not process your request. Please try again.';
 
         // Check if the LLM included a booking confirmation signal
-        const bookingMatch = content.match(/BOOKING_CONFIRMED:(\{.*?\})/);
+        // Use a greedy regex with 's' (dotAll) flag to match multi-line JSON
+        const bookingMatch = content.match(/BOOKING_CONFIRMED:(\{[\s\S]*?\})/);
+        console.log('[Booking Chat] Content from LLM:', content.substring(0, 200));
+        console.log('[Booking Chat] Booking match found:', !!bookingMatch);
         if (bookingMatch) {
           try {
             const bookingData = JSON.parse(bookingMatch[1]);
+            console.log('[Booking Chat] Parsed booking data:', bookingData);
             const bookingResult = await createCalComBooking({
               customerName: bookingData.customerName,
               customerEmail: bookingData.customerEmail,
@@ -178,9 +208,10 @@ Instructions:
               startTime: bookingData.startTime,
               timeZone: tz,
             });
+            console.log('[Booking Chat] Cal.com booking result:', bookingResult);
 
-            // Strip the raw BOOKING_CONFIRMED line from the reply
-            const cleanContent = content.replace(/BOOKING_CONFIRMED:\{.*?\}/, '').trim();
+            // Strip the raw BOOKING_CONFIRMED line from the reply (greedy, dotAll)
+            const cleanContent = content.replace(/BOOKING_CONFIRMED:\{[\s\S]*?\}/, '').trim();
 
             return {
               reply: cleanContent,
@@ -190,10 +221,13 @@ Instructions:
                 startTime: bookingResult.startTime,
                 endTime: bookingResult.endTime,
               } : null,
-              bookingError: bookingResult.success ? null : bookingResult.error,
+              bookingError: bookingResult.success ? null : (bookingResult as any).error,
             };
           } catch (parseErr) {
             console.error('[Booking Chat] Failed to parse booking data:', parseErr);
+            // Still strip the signal even if booking failed
+            const cleanContent = content.replace(/BOOKING_CONFIRMED:\{[\s\S]*?\}/, '').trim();
+            return { reply: cleanContent, booked: false, bookingDetails: null, bookingError: 'Failed to parse booking data' };
           }
         }
 

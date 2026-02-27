@@ -290,3 +290,10 @@
 - [x] Add ANTHROPIC_API_KEY to environment
 - [ ] Test chatbot flow end-to-end after deployment
 - [ ] Save checkpoint
+
+## Chatbot Fixes (Critical)
+- [x] Fix BOOKING_CONFIRMED signal leaking into chat display (switched to [\s\S]*? regex, strips before returning)
+- [x] Fix quote data not passing to Claude (properly formats services, name, phone, email, boat details)
+- [x] Fix Cal.com booking not being created (regex now correctly matches multi-line JSON signal)
+- [x] Update thank you page accent color to #00FFFF (brand cyan, replaced all cyan-400 Tailwind classes)
+- [ ] Save checkpoint

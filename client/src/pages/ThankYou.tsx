@@ -125,7 +125,7 @@ export default function ThankYou() {
           />
           <a
             href="https://a1marinecare.ca"
-            className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
+            className="text-[#00FFFF] hover:text-[#00FFFF]/80 transition-colors text-sm font-medium"
           >
             Back to Home
           </a>
@@ -139,8 +139,8 @@ export default function ThankYou() {
           {/* Success Message */}
           <div className="text-center space-y-6">
             <div className="relative inline-block">
-              <div className="absolute inset-0 bg-cyan-400/20 rounded-full blur-2xl"></div>
-              <CheckCircle className="w-24 h-24 text-cyan-400 relative" strokeWidth={1.5} />
+              <div className="absolute inset-0 bg-[#00FFFF]/20 rounded-full blur-2xl"></div>
+              <CheckCircle className="w-24 h-24 text-[#00FFFF] relative" strokeWidth={1.5} />
             </div>
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-white">Thank You for Your Deposit!</h1>
@@ -154,14 +154,14 @@ export default function ThankYou() {
           <Card className="bg-gray-900/50 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <span className="text-cyan-400">→</span>
+                <span className="text-[#00FFFF]">→</span>
                 What Happens Next
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-400/10 flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-cyan-400" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00FFFF]/10 flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-[#00FFFF]" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold mb-1">Schedule Your Service Below</h3>
@@ -171,8 +171,8 @@ export default function ThankYou() {
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-400/10 flex items-center justify-center">
-                  <Phone className="w-6 h-6 text-cyan-400" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00FFFF]/10 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-[#00FFFF]" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold mb-1">Marina Will Call You</h3>
@@ -182,8 +182,8 @@ export default function ThankYou() {
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-400/10 flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-cyan-400" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#00FFFF]/10 flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-[#00FFFF]" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold mb-1">Service Completion</h3>
@@ -199,7 +199,7 @@ export default function ThankYou() {
           <Card className="bg-gray-900/50 border-gray-800">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Bot className="w-5 h-5 text-cyan-400" />
+                <Bot className="w-5 h-5 text-[#00FFFF]" />
                 Schedule Your Appointment
               </CardTitle>
               <CardDescription className="text-gray-400">
@@ -209,8 +209,8 @@ export default function ThankYou() {
             <CardContent className="space-y-4">
               {/* Booking Confirmed Banner */}
               {bookingConfirmed && bookingDetails && (
-                <div className="rounded-lg bg-cyan-400/10 border border-cyan-400/30 p-4 text-center space-y-1">
-                  <p className="text-cyan-400 font-semibold text-lg">Appointment Booked!</p>
+                <div className="rounded-lg bg-[#00FFFF]/10 border border-[#00FFFF]/30 p-4 text-center space-y-1">
+                  <p className="text-[#00FFFF] font-semibold text-lg">Appointment Booked!</p>
                   <p className="text-gray-300 text-sm">
                     {new Date(bookingDetails.startTime).toLocaleString('en-CA', {
                       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -230,14 +230,14 @@ export default function ThankYou() {
                     className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.role === 'assistant' && (
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-400/10 flex items-center justify-center mt-1">
-                        <Bot className="w-4 h-4 text-cyan-400" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#00FFFF]/10 flex items-center justify-center mt-1">
+                        <Bot className="w-4 h-4 text-[#00FFFF]" />
                       </div>
                     )}
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                         msg.role === 'user'
-                          ? 'bg-cyan-400/20 text-white rounded-tr-sm'
+                          ? 'bg-[#00FFFF]/20 text-white rounded-tr-sm'
                           : 'bg-gray-800 text-gray-200 rounded-tl-sm'
                       }`}
                     >
@@ -252,14 +252,14 @@ export default function ThankYou() {
                 ))}
                 {isSending && (
                   <div className="flex gap-3 justify-start">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-400/10 flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-cyan-400" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#00FFFF]/10 flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-[#00FFFF]" />
                     </div>
                     <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
                       <div className="flex gap-1 items-center h-5">
-                        <span className="w-2 h-2 bg-cyan-400/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-2 h-2 bg-cyan-400/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-2 h-2 bg-cyan-400/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-2 h-2 bg-[#00FFFF]/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-[#00FFFF]/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-[#00FFFF]/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   </div>
@@ -280,7 +280,7 @@ export default function ThankYou() {
                 <Button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || isSending || bookingConfirmed}
-                  className="bg-cyan-400 hover:bg-cyan-500 text-black px-4"
+                  className="bg-[#00FFFF] hover:bg-[#00CCCC] text-black px-4"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
@@ -298,14 +298,14 @@ export default function ThankYou() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3 text-gray-300">
-                <Mail className="w-5 h-5 text-cyan-400" />
-                <a href="mailto:contact@a1marinecare.ca" className="hover:text-cyan-400 transition-colors">
+                <Mail className="w-5 h-5 text-[#00FFFF]" />
+                <a href="mailto:contact@a1marinecare.ca" className="hover:text-[#00FFFF] transition-colors">
                   contact@a1marinecare.ca
                 </a>
               </div>
               <div className="flex items-center gap-3 text-gray-300">
-                <Phone className="w-5 h-5 text-cyan-400" />
-                <a href="tel:+17059961010" className="hover:text-cyan-400 transition-colors">
+                <Phone className="w-5 h-5 text-[#00FFFF]" />
+                <a href="tel:+17059961010" className="hover:text-[#00FFFF] transition-colors">
                   (705) 996-1010
                 </a>
               </div>
@@ -317,13 +317,13 @@ export default function ThankYou() {
             <Button
               asChild
               variant="outline"
-              className="bg-transparent border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/10"
+              className="bg-transparent border-[#00FFFF]/50 text-[#00FFFF] hover:bg-[#00FFFF]/10"
             >
               <a href="https://a1marinecare.ca">Return to Home</a>
             </Button>
             <Button
               asChild
-              className="bg-cyan-400 hover:bg-cyan-500 text-black font-semibold px-8 py-6 text-lg"
+              className="bg-[#00FFFF] hover:bg-[#00CCCC] text-black font-semibold px-8 py-6 text-lg"
             >
               <a href="/">Get Another Quote</a>
             </Button>
