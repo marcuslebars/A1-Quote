@@ -97,18 +97,22 @@ function CalEmbed({ customerName, customerEmail }: { customerName?: string; cust
 export default function ThankYou() {
   const [quoteData, setQuoteData] = useState<any>(null);
 
-  // Get quote ID from localStorage (saved when quote was submitted)
-  const [quoteId, setQuoteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedQuoteId = localStorage.getItem('lastQuoteId');
-    if (savedQuoteId) {
-      setQuoteId(savedQuoteId);
-      console.log('[ThankYou] Found quote ID in localStorage:', savedQuoteId);
-    } else {
-      console.warn('[ThankYou] No quote ID found in localStorage');
+  // Get quote ID from localStorage (saved when quote was submitted).
+  // Initialised synchronously so downstream state (booking persistence) can
+  // use the correct key on the very first render.
+  const [quoteId] = useState<string | null>(() => {
+    try {
+      const id = localStorage.getItem('lastQuoteId');
+      if (id) {
+        console.log('[ThankYou] Found quote ID in localStorage:', id);
+      } else {
+        console.warn('[ThankYou] No quote ID found in localStorage');
+      }
+      return id;
+    } catch {
+      return null;
     }
-  }, []);
+  });
 
   // Fetch quote data using the quote ID
   const { data: quote, error } = trpc.quotes.getById.useQuery(
@@ -138,8 +142,38 @@ export default function ThankYou() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<{ startTime: string; endTime: string; bookingUid?: string } | null>(null);
+
+  // Restore booking confirmation from localStorage on mount so the card
+  // survives a page refresh (keyed by quoteId to avoid cross-quote bleed).
+  const storageKey = quoteId ? `bookingConfirmed_${quoteId}` : 'bookingConfirmed_latest';
+  const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(storageKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [bookingDetails, setBookingDetails] = useState<{ startTime: string; endTime: string; bookingUid?: string } | null>(() => {
+    try {
+      const raw = localStorage.getItem(`${storageKey}_details`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Persist booking state to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, String(bookingConfirmed));
+      if (bookingDetails) {
+        localStorage.setItem(`${storageKey}_details`, JSON.stringify(bookingDetails));
+      }
+    } catch {
+      // localStorage unavailable (private browsing, storage full, etc.) — silently ignore
+    }
+  }, [bookingConfirmed, bookingDetails, storageKey]);
+
   const [calendarMenuOpen, setCalendarMenuOpen] = useState(false);
   const calendarMenuRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
