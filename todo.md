@@ -247,3 +247,7 @@
 - [x] Remove debug card showing quote details from customer view
 - [x] Keep console logging for debugging in Railway logs
 - [ ] Save checkpoint
+
+## Update Stripe Payment Link
+- [x] Update Stripe payment link to new URL: https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01
+- [ ] Save checkpoint
