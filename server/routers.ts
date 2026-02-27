@@ -158,12 +158,10 @@ Instructions:
 - Be warm, professional, and concise. Do not repeat the full list of slots unless asked.
 - Today is ${now.toLocaleDateString('en-CA', { timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} in ${tz}.`;
 
-        const { invokeLLM } = await import('./llm');
+        const { invokeLLM, BOOKING_SYSTEM_PROMPT } = await import('./llm');
         const llmResponse = await invokeLLM({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...input.messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
-          ],
+          system: systemPrompt || BOOKING_SYSTEM_PROMPT,
+          messages: input.messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
         });
 
         const content: string = llmResponse.choices?.[0]?.message?.content || 'I apologize, I could not process your request. Please try again.';

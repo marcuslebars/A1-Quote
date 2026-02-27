@@ -281,3 +281,11 @@
 - [x] Handle BOOKING_REMINDER event in /api/marina/calcom-webhook
 - [x] Marina calls customer with reminder-specific context (appointment tomorrow, confirm boat accessible, ask for gate codes/slip number)
 - [ ] Save checkpoint
+
+## Fix Booking Chatbot Error — Switch to Claude
+- [x] Diagnose error: llm.ts was using OPENAI_API_KEY which is not set in Railway
+- [x] Rewrite llm.ts to use Anthropic Claude API (claude-3-haiku-20240307)
+- [x] Write purpose-built system prompt for A1 Marine Care booking assistant
+- [x] Add ANTHROPIC_API_KEY to environment (validated successfully)
+- [ ] Test chatbot flow end-to-end after deployment
+- [ ] Save checkpoint
