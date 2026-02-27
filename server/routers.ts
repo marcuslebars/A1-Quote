@@ -233,6 +233,7 @@ Instructions:
               booked: bookingResult.success,
               bookingDetails: bookingResult.success ? {
                 bookingId: bookingResult.bookingId,
+                bookingUid: bookingResult.bookingUid,
                 startTime: bookingResult.startTime,
                 endTime: bookingResult.endTime,
               } : null,

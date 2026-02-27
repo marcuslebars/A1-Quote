@@ -317,3 +317,9 @@
 - [x] Added detailed logging to surface exact JSON being extracted and Cal.com API response
 - [x] Renamed "Schedule Your Appointment" to "Book Your Service with Marina"
 - [ ] Save checkpoint
+
+## Booking Confirmation Card in Chat
+- [ ] Show confirmation card after successful booking with date, time, and reschedule link
+- [ ] Card styled with #00FFFF brand accent, checkmark icon, and professional layout
+- [ ] Reschedule link points to Cal.com booking management page
+- [ ] Save checkpoint

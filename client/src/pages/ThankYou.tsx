@@ -98,7 +98,7 @@ export default function ThankYou() {
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<{ startTime: string; endTime: string } | null>(null);
+  const [bookingDetails, setBookingDetails] = useState<{ startTime: string; endTime: string; bookingUid?: string } | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const chatMutation = trpc.booking.chat.useMutation({
@@ -106,7 +106,11 @@ export default function ThankYou() {
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
       if (data.booked && data.bookingDetails) {
         setBookingConfirmed(true);
-        setBookingDetails(data.bookingDetails);
+        setBookingDetails({
+          startTime: data.bookingDetails.startTime,
+          endTime: data.bookingDetails.endTime,
+          bookingUid: (data.bookingDetails as any).bookingUid,
+        });
       }
       setIsSending(false);
     },
@@ -242,18 +246,78 @@ export default function ThankYou() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Booking Confirmed Banner */}
+              {/* Booking Confirmation Card */}
               {bookingConfirmed && bookingDetails && (
-                <div className="rounded-lg bg-[#00FFFF]/10 border border-[#00FFFF]/30 p-4 text-center space-y-1">
-                  <p className="text-[#00FFFF] font-semibold text-lg">Appointment Booked!</p>
-                  <p className="text-gray-300 text-sm">
-                    {new Date(bookingDetails.startTime).toLocaleString('en-CA', {
-                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                      hour: 'numeric', minute: '2-digit', hour12: true,
-                    })}
-                  </p>
-                  <p className="text-gray-400 text-xs">A confirmation email has been sent. Marina will call you shortly.</p>
+                <div className="rounded-xl border border-[#00FFFF]/40 bg-gradient-to-br from-[#00FFFF]/10 to-[#00FFFF]/5 p-5 space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#00FFFF]/20 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-5 h-5 text-[#00FFFF]" />
+                    </div>
+                    <div>
+                      <p className="text-[#00FFFF] font-bold text-lg leading-tight">Appointment Confirmed!</p>
+                      <p className="text-gray-400 text-xs">A confirmation email has been sent to you</p>
+                    </div>
+                  </div>
+
+                  {/* Date & Time */}
+                  <div className="bg-black/30 rounded-lg p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <Calendar className="w-4 h-4 text-[#00FFFF] flex-shrink-0" />
+                      <span className="font-semibold text-white">
+                        {new Date(bookingDetails.startTime).toLocaleDateString('en-CA', {
+                          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <span className="w-4 h-4 flex-shrink-0 flex items-center justify-center text-[#00FFFF] font-bold text-xs">⏰</span>
+                      <span className="text-gray-300">
+                        {new Date(bookingDetails.startTime).toLocaleTimeString('en-CA', {
+                          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                          hour: 'numeric', minute: '2-digit', hour12: true,
+                        })}
+                        {bookingDetails.endTime && (
+                          <span className="text-gray-500">
+                            {' '}–{' '}
+                            {new Date(bookingDetails.endTime).toLocaleTimeString('en-CA', {
+                              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                              hour: 'numeric', minute: '2-digit', hour12: true,
+                            })}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer: Marina note + reschedule link */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className="text-gray-400 text-sm">
+                      Marina will call you shortly to confirm the details.
+                    </p>
+                    {bookingDetails.bookingUid ? (
+                      <a
+                        href={`https://cal.com/reschedule/${bookingDetails.bookingUid}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Reschedule Appointment
+                      </a>
+                    ) : (
+                      <a
+                        href="https://cal.com/a1-marine-care/book-your-service"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-[#00FFFF] hover:text-[#00CCCC] transition-colors font-medium whitespace-nowrap"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Manage Appointment
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
 
