@@ -235,10 +235,10 @@ export default function ThankYou() {
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Bot className="w-5 h-5 text-[#00FFFF]" />
-                Schedule Your Appointment
+                Book Your Service with Marina
               </CardTitle>
               <CardDescription className="text-gray-400">
-                Chat with our assistant to find and book your preferred service date
+                Chat with Marina to find and book your preferred service date
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

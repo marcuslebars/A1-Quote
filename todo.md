@@ -303,3 +303,17 @@
 - [x] Pre-fill customer name and email from quote data
 - [x] Style to match dark brand aesthetic (dark theme, #00FFFF brand color)
 - [ ] Save checkpoint
+
+## Fix Cal.com Availability Fetch Failing
+- [ ] Diagnose why getCalComAvailability fails in production
+- [ ] Check CALCOM_API_KEY and CALCOM_EVENT_TYPE_ID are set in Railway
+- [ ] Fix the API call if the endpoint or parameters are wrong
+- [ ] Test chatbot shows real available slots
+- [ ] Save checkpoint
+
+## Fix Cal.com Booking Not Being Created + Rename Chat Heading
+- [x] Diagnosed: regex /BOOKING_CONFIRMED:({[\s\S]*?})/ was non-greedy and stopped at first } causing JSON parse failure
+- [x] Fixed: replaced regex with brace-depth parser that correctly extracts the full JSON object
+- [x] Added detailed logging to surface exact JSON being extracted and Cal.com API response
+- [x] Renamed "Schedule Your Appointment" to "Book Your Service with Marina"
+- [ ] Save checkpoint

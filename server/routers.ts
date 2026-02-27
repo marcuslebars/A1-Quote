@@ -193,13 +193,28 @@ Instructions:
         const content: string = llmResponse.choices?.[0]?.message?.content || 'I apologize, I could not process your request. Please try again.';
 
         // Check if the LLM included a booking confirmation signal
-        // Use a greedy regex with 's' (dotAll) flag to match multi-line JSON
-        const bookingMatch = content.match(/BOOKING_CONFIRMED:(\{[\s\S]*?\})/);
-        console.log('[Booking Chat] Content from LLM:', content.substring(0, 200));
-        console.log('[Booking Chat] Booking match found:', !!bookingMatch);
-        if (bookingMatch) {
+        // Extract JSON by finding the opening brace after BOOKING_CONFIRMED: and scanning for the matching closing brace
+        console.log('[Booking Chat] Content from LLM:', content.substring(0, 300));
+        const signalIndex = content.indexOf('BOOKING_CONFIRMED:');
+        console.log('[Booking Chat] BOOKING_CONFIRMED signal found at index:', signalIndex);
+        if (signalIndex !== -1) {
           try {
-            const bookingData = JSON.parse(bookingMatch[1]);
+            const jsonStart = content.indexOf('{', signalIndex);
+            if (jsonStart === -1) throw new Error('No JSON object found after BOOKING_CONFIRMED:');
+            // Walk forward to find the matching closing brace
+            let depth = 0;
+            let jsonEnd = -1;
+            for (let i = jsonStart; i < content.length; i++) {
+              if (content[i] === '{') depth++;
+              else if (content[i] === '}') {
+                depth--;
+                if (depth === 0) { jsonEnd = i; break; }
+              }
+            }
+            if (jsonEnd === -1) throw new Error('Could not find closing brace for BOOKING_CONFIRMED JSON');
+            const jsonStr = content.slice(jsonStart, jsonEnd + 1);
+            console.log('[Booking Chat] Extracted JSON string:', jsonStr);
+            const bookingData = JSON.parse(jsonStr);
             console.log('[Booking Chat] Parsed booking data:', bookingData);
             const bookingResult = await createCalComBooking({
               customerName: bookingData.customerName,
@@ -210,11 +225,11 @@ Instructions:
             });
             console.log('[Booking Chat] Cal.com booking result:', bookingResult);
 
-            // Strip the raw BOOKING_CONFIRMED line from the reply (greedy, dotAll)
-            const cleanContent = content.replace(/BOOKING_CONFIRMED:\{[\s\S]*?\}/, '').trim();
+            // Strip the raw BOOKING_CONFIRMED line from the reply
+            const cleanContent = content.slice(0, signalIndex).trim() + '\n' + content.slice(jsonEnd + 1).trim();
 
             return {
-              reply: cleanContent,
+              reply: cleanContent.trim(),
               booked: bookingResult.success,
               bookingDetails: bookingResult.success ? {
                 bookingId: bookingResult.bookingId,
@@ -225,9 +240,9 @@ Instructions:
             };
           } catch (parseErr) {
             console.error('[Booking Chat] Failed to parse booking data:', parseErr);
-            // Still strip the signal even if booking failed
-            const cleanContent = content.replace(/BOOKING_CONFIRMED:\{[\s\S]*?\}/, '').trim();
-            return { reply: cleanContent, booked: false, bookingDetails: null, bookingError: 'Failed to parse booking data' };
+            // Strip the signal even if booking failed
+            const cleanContent = content.slice(0, signalIndex).trim();
+            return { reply: cleanContent || content, booked: false, bookingDetails: null, bookingError: 'Failed to parse booking data' };
           }
         }
 
