@@ -271,3 +271,8 @@
 - [ ] Test full flow end-to-end after deployment
 - [ ] Configure Cal.com webhook URL in Cal.com dashboard
 - [ ] Save checkpoint
+
+## BOOKING_CANCELLED Webhook — Marina Re-booking Call
+- [x] Handle BOOKING_CANCELLED event in /api/marina/calcom-webhook
+- [x] Marina calls customer with cancellation-specific context (reason to call, re-book prompt)
+- [ ] Save checkpoint

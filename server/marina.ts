@@ -126,8 +126,10 @@ router.post('/calcom-webhook', async (req, res) => {
     const payload = req.body;
     console.log('[Cal.com Webhook] Received event:', payload?.triggerEvent);
 
-    // Only handle BOOKING_CREATED events
-    if (payload?.triggerEvent !== 'BOOKING_CREATED') {
+    const triggerEvent = payload?.triggerEvent;
+
+    // Only handle BOOKING_CREATED and BOOKING_CANCELLED events
+    if (triggerEvent !== 'BOOKING_CREATED' && triggerEvent !== 'BOOKING_CANCELLED') {
       return res.json({ received: true, action: 'ignored' });
     }
 
@@ -147,14 +149,13 @@ router.post('/calcom-webhook', async (req, res) => {
     const customerPhone = attendee.phoneNumber || attendee.phone;
     const customerName = attendee.name;
     const startTime = booking.startTime;
-    const endTime = booking.endTime;
 
     if (!customerPhone) {
       console.warn('[Cal.com Webhook] No phone number for attendee:', customerName);
       return res.json({ received: true, action: 'no_phone' });
     }
 
-    // Format the booking date/time for Marina
+    // Format the booking date/time for context
     const bookingDate = startTime
       ? new Date(startTime).toLocaleString('en-CA', {
           timeZone: attendee.timeZone || 'America/Toronto',
@@ -194,28 +195,40 @@ router.post('/calcom-webhook', async (req, res) => {
       console.warn('[Cal.com Webhook] Could not fetch quote for phone:', customerPhone);
     }
 
-    console.log('[Cal.com Webhook] Triggering Marina call for:', customerName, customerPhone);
-
-    const callResult = await triggerMarinaCall(customerPhone, {
-      customerName,
-      boatLength: quoteContext.boatLength,
-      boatType: quoteContext.boatType,
-      servicesSelected: quoteContext.servicesSelected,
-      quoteTotal: quoteContext.quoteTotal,
-      depositAmount: 250,
-      // Pass booking date as part of services context so Marina knows the appointment
-      ...(startTime && {
-        servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — appointment on ${bookingDate}`,
-      }),
-    });
-
-    if (callResult.success) {
-      console.log('[Cal.com Webhook] Marina call triggered successfully:', callResult.conversationId);
+    // Build call context based on event type
+    let callContext;
+    if (triggerEvent === 'BOOKING_CREATED') {
+      console.log('[Cal.com Webhook] BOOKING_CREATED — triggering welcome call for:', customerName);
+      callContext = {
+        customerName,
+        boatLength: quoteContext.boatLength,
+        boatType: quoteContext.boatType,
+        quoteTotal: quoteContext.quoteTotal,
+        depositAmount: 250,
+        servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — appointment confirmed for ${bookingDate}`,
+      };
     } else {
-      console.error('[Cal.com Webhook] Marina call failed:', callResult.error);
+      // BOOKING_CANCELLED — Marina calls to understand why and attempt to re-book
+      console.log('[Cal.com Webhook] BOOKING_CANCELLED — triggering re-booking call for:', customerName);
+      callContext = {
+        customerName,
+        boatLength: quoteContext.boatLength,
+        boatType: quoteContext.boatType,
+        quoteTotal: quoteContext.quoteTotal,
+        depositAmount: 250,
+        servicesSelected: `${quoteContext.servicesSelected || 'boat detailing services'} — CANCELLED appointment was on ${bookingDate}. Purpose of this call: understand why the customer cancelled and offer to reschedule at a more convenient time.`,
+      };
     }
 
-    res.json({ received: true, action: 'call_triggered', success: callResult.success });
+    const callResult = await triggerMarinaCall(customerPhone, callContext);
+
+    if (callResult.success) {
+      console.log(`[Cal.com Webhook] Marina ${triggerEvent} call triggered:`, callResult.conversationId);
+    } else {
+      console.error(`[Cal.com Webhook] Marina ${triggerEvent} call failed:`, callResult.error);
+    }
+
+    res.json({ received: true, action: 'call_triggered', event: triggerEvent, success: callResult.success });
   } catch (error) {
     console.error('[Cal.com Webhook] Error:', error);
     res.status(500).json({ received: false, error: 'Internal server error' });
