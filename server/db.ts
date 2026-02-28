@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { Quote, IQuote } from './models/Quote';
+import { Booking, IBooking } from './models/Booking';
 import { connectDB } from './db/mongodb';
 
 // Ensure database connection
@@ -65,4 +66,47 @@ export async function getQuoteByPhone(phone: string) {
   // Find the most recent quote for this phone number
   const quote = await Quote.findOne({ phone }).sort({ createdAt: -1 });
   return quote ? quote.toObject() : null;
+}
+
+// ─── Booking helpers ──────────────────────────────────────────────────────────
+
+export async function createBooking(data: {
+  quoteId?: string;
+  calcomBookingId?: string;
+  calcomBookingUid?: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  startTime: Date;
+  endTime?: Date;
+  services?: string;
+  location?: string;
+  timeZone?: string;
+}) {
+  const booking = await Booking.create({
+    id: nanoid(),
+    ...data,
+    timeZone: data.timeZone || 'America/Toronto',
+    reminderSent: false,
+  });
+  return booking.toObject();
+}
+
+/**
+ * Return all bookings whose reminder has not yet been sent and whose
+ * appointment starts between `windowStart` and `windowEnd` (UTC).
+ */
+export async function getBookingsDueForReminder(windowStart: Date, windowEnd: Date) {
+  const bookings = await Booking.find({
+    reminderSent: false,
+    startTime: { $gte: windowStart, $lte: windowEnd },
+  });
+  return bookings.map(b => b.toObject());
+}
+
+export async function markReminderSent(bookingId: string) {
+  await Booking.findOneAndUpdate(
+    { id: bookingId },
+    { $set: { reminderSent: true, reminderSentAt: new Date() } }
+  );
 }

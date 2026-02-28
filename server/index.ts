@@ -5,8 +5,9 @@ import { appRouter } from "./routers";
 import { createContext } from "./context";
 import { handleStripeWebhook } from "./stripe";
 import marinaRouter from "./marina";
-import { connectDB } from "./db/mongodb";
-import path from "path";
+import { connectDB } from './db/mongodb';
+import { startReminderScheduler } from './reminderScheduler';
+import path from 'path';
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,8 @@ try {
   console.log('[Server] Connecting to MongoDB...');
   await connectDB();
   console.log('[Server] MongoDB connection complete');
+  // Start the 24-hour reminder scheduler after DB is ready
+  startReminderScheduler();
 } catch (error) {
   console.error("[Server] Failed to connect to MongoDB:", error);
 }

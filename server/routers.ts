@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStripeSessionId } from "./db";
+import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStripeSessionId, createBooking } from "./db";
 import { publicProcedure, router } from "./trpc";
 import { triggerMarinaCall } from "./elevenlabs";
 import { createCalComBooking, getCalComAvailability } from "./calcom";
@@ -248,7 +248,7 @@ Instructions:
             // Booking succeeded — strip the raw signal line and return the clean reply
             const cleanContent = content.slice(0, signalIndex).trim() + '\n' + content.slice(jsonEnd + 1).trim();
 
-            // Fire confirmation email (non-blocking — don't let email failure break the booking response)
+            // Resolve service names and location from the quote (used by both email and DB record)
             const serviceNames: string[] = [];
             let emailLocation = 'your marina';
             try {
@@ -267,6 +267,24 @@ Instructions:
               }
             } catch {}
 
+            const resolvedServices = serviceNames.length > 0 ? serviceNames.join(', ') : 'Boat detailing services';
+
+            // Persist booking record for reminder scheduling (non-blocking)
+            createBooking({
+              quoteId: input.quoteId,
+              calcomBookingId: String((bookingResult as any).bookingId || ''),
+              calcomBookingUid: (bookingResult as any).bookingUid,
+              customerName: bookingData.customerName,
+              customerEmail: bookingData.customerEmail,
+              customerPhone: bookingData.customerPhone,
+              startTime: new Date((bookingResult as any).startTime),
+              endTime: (bookingResult as any).endTime ? new Date((bookingResult as any).endTime) : undefined,
+              services: resolvedServices,
+              location: emailLocation,
+              timeZone: tz,
+            }).catch(e => console.error('[Booking] Failed to persist booking record:', e.message));
+
+            // Fire confirmation email (non-blocking — don't let email failure break the booking response)
             sendBookingConfirmationEmail({
               customerName: bookingData.customerName,
               customerEmail: bookingData.customerEmail,
@@ -274,7 +292,7 @@ Instructions:
               endTime: (bookingResult as any).endTime,
               bookingUid: (bookingResult as any).bookingUid,
               quoteId: input.quoteId,
-              services: serviceNames.length > 0 ? serviceNames.join(', ') : 'Boat detailing services',
+              services: resolvedServices,
               location: emailLocation,
               timeZone: tz,
             }).catch(e => console.error('[Email] Non-blocking send error:', e.message));
