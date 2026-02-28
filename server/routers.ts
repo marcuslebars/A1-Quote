@@ -3,6 +3,7 @@ import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStr
 import { publicProcedure, router } from "./trpc";
 import { triggerMarinaCall } from "./elevenlabs";
 import { createCalComBooking, getCalComAvailability } from "./calcom";
+import { sendBookingConfirmationEmail } from "./email";
 
 export const appRouter = router({
   quotes: router({
@@ -246,6 +247,37 @@ Instructions:
 
             // Booking succeeded — strip the raw signal line and return the clean reply
             const cleanContent = content.slice(0, signalIndex).trim() + '\n' + content.slice(jsonEnd + 1).trim();
+
+            // Fire confirmation email (non-blocking — don't let email failure break the booking response)
+            const serviceNames: string[] = [];
+            let emailLocation = 'your marina';
+            try {
+              const q = input.quoteId ? await getQuoteById(input.quoteId) : null;
+              if (q) {
+                const svc = q.services as Record<string, any>;
+                if (svc?.gelcoat) serviceNames.push('Gelcoat Restoration');
+                if (svc?.exterior) serviceNames.push('Exterior Detailing');
+                if (svc?.interior) serviceNames.push('Interior Detailing');
+                if (svc?.ceramic) serviceNames.push('Ceramic Coating');
+                if (svc?.graphene) serviceNames.push('Graphene Coating');
+                if (svc?.wetSanding) serviceNames.push('Wet Sanding');
+                if (svc?.bottomPainting) serviceNames.push('Bottom Painting');
+                if (svc?.vinyl) serviceNames.push('Vinyl Wrap');
+                if (q.location) emailLocation = q.location;
+              }
+            } catch {}
+
+            sendBookingConfirmationEmail({
+              customerName: bookingData.customerName,
+              customerEmail: bookingData.customerEmail,
+              startTime: (bookingResult as any).startTime,
+              endTime: (bookingResult as any).endTime,
+              bookingUid: (bookingResult as any).bookingUid,
+              quoteId: input.quoteId,
+              services: serviceNames.length > 0 ? serviceNames.join(', ') : 'Boat detailing services',
+              location: emailLocation,
+              timeZone: tz,
+            }).catch(e => console.error('[Email] Non-blocking send error:', e.message));
 
             return {
               reply: cleanContent.trim(),
