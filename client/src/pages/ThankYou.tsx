@@ -95,6 +95,9 @@ function CalEmbed({ customerName, customerEmail }: { customerName?: string; cust
 }
 
 export default function ThankYou() {
+  // Test mode: skip Stripe, used for verifying the thank you page flow
+  const isTestMode = new URLSearchParams(window.location.search).get('test') === 'true';
+
   const [quoteData, setQuoteData] = useState<any>(null);
 
   // Get quote ID from localStorage (saved when quote was submitted).
@@ -271,9 +274,13 @@ export default function ThankYou() {
               <CheckCircle className="w-24 h-24 text-[#00FFFF] relative" strokeWidth={1.5} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-white">Thank You for Your Deposit!</h1>
+              <h1 className="text-4xl font-bold text-white">
+                {isTestMode ? 'Quote Submitted — Test Mode' : 'Thank You for Your Deposit!'}
+              </h1>
               <p className="text-gray-400 text-lg">
-                Your $250 deposit has been successfully processed.
+                {isTestMode
+                  ? 'Stripe checkout bypassed. Use the chat below to test the booking flow.'
+                  : 'Your $250 deposit has been successfully processed.'}
               </p>
             </div>
           </div>
