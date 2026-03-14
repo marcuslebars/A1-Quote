@@ -39,6 +39,7 @@ export default function Home() {
 
   // Quote submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const submitQuote = trpc.quotes.submit.useMutation();
 
   // Boat details
@@ -923,7 +924,9 @@ export default function Home() {
                       size="lg"
                       variant="outline"
                       className="w-full font-semibold text-lg h-14 rounded-xl border-border/50 hover:bg-background/50"
+                      disabled={isDownloadingPDF}
                       onClick={async () => {
+                        setIsDownloadingPDF(true);
                         try {
                           const response = await fetch('/api/quote/download-pdf', {
                             method: 'POST',
@@ -935,12 +938,17 @@ export default function Home() {
                               boatLength: boatDetails.length,
                               boatType: boatDetails.type,
                               serviceLocation: boatDetails.location,
-                              services,
+                              services: services, // This is the ServiceSelections object
                               estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
                               breakdown: estimate?.breakdown || [],
                             }),
                           });
-                          if (!response.ok) throw new Error('Failed to generate PDF');
+                          
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'Failed to generate PDF');
+                          }
+                          
                           const blob = await response.blob();
                           const url = window.URL.createObjectURL(blob);
                           const a = document.createElement('a');
@@ -950,14 +958,25 @@ export default function Home() {
                           a.click();
                           window.URL.revokeObjectURL(url);
                           document.body.removeChild(a);
-                        } catch (error) {
+                        } catch (error: any) {
                           console.error('Failed to download PDF:', error);
-                          alert('Failed to download PDF. Please try again.');
+                          alert(`Failed to download PDF: ${error.message}. Please try again.`);
+                        } finally {
+                          setIsDownloadingPDF(false);
                         }
                       }}
                     >
-                      <Download className="w-5 h-5 mr-2" />
-                      Download Quote as PDF
+                      {isDownloadingPDF ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                          Generating PDF...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-5 h-5 mr-2" />
+                          Download Quote as PDF
+                        </>
+                      )}
                     </Button>
                   </div>
                 )}
