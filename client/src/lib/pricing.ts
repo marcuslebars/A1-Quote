@@ -89,7 +89,7 @@ export interface PricingResult {
   reviewReasons: string[];
 }
 
-// Gelcoat pricing tiers
+// Gelcoat pricing tiers (2026)
 const GELCOAT_RATES = {
   hull: [
     { max: 20, rate: 21 },
@@ -108,12 +108,6 @@ const GELCOAT_RATES = {
     { max: 40, rate: 34 },
     { max: 45, rate: 37 },
     { max: Infinity, rate: 40 }
-  ],
-  bowrider: [
-    { max: 20, rate: 17 },
-    { max: 25, rate: 19 },
-    { max: 30, rate: 21 },
-    { max: Infinity, rate: 0 } // Manual review
   ]
 };
 
@@ -154,10 +148,8 @@ function getBoatTypeDisplayName(shortValue: string): string {
   return mapping[shortValue.toLowerCase()] || shortValue;
 }
 
-function getGelcoatRate(length: number, area: 'hull' | 'topsides' | 'bowrider' | 'fullboat'): number {
-  // For fullboat, we'll use hull rates (calculation will sum hull + topsides separately)
-  const rateArea = area === 'fullboat' ? 'hull' : area;
-  const rates = GELCOAT_RATES[rateArea];
+function getGelcoatRate(length: number, area: 'hull' | 'topsides'): number {
+  const rates = GELCOAT_RATES[area];
   for (const tier of rates) {
     if (length <= tier.max) {
       return tier.rate;
@@ -170,54 +162,53 @@ export function calculateGelcoat(length: number, config: GelcoatConfig): Pricing
   const breakdown: string[] = [];
   const reviewReasons: string[] = [];
   let subtotal = 0;
+  let baseServiceSubtotal = 0;
 
-  if (config.area === 'bowrider' && length > 30) {
-    reviewReasons.push('Bowrider over 30ft requires manual review');
-    return { subtotal: 0, breakdown, requiresManualReview: true, reviewReasons };
-  }
+  const hullRate = getGelcoatRate(length, 'hull');
+  const topsidesRate = getGelcoatRate(length, 'topsides');
 
-  if (length > 45) {
-    reviewReasons.push('Boat over 45ft requires manual review');
-  }
+  if (config.area === 'hull') {
+    // Hull Only
+    const hullPrice = length * hullRate;
+    breakdown.push(`Hull: ${length}ft × $${hullRate}/ft = $${hullPrice.toFixed(2)}`);
+    baseServiceSubtotal = hullPrice;
 
-  // Handle fullboat calculation (hull + topsides)
-  if (config.area === 'fullboat') {
-    const hullRate = getGelcoatRate(length, 'hull');
-    const topsidesRate = getGelcoatRate(length, 'topsides');
-    
-    let hullPrice = length * hullRate;
-    let topsidesPrice = length * topsidesRate;
-    
+  } else if (config.area === 'topsides') {
+    // Topsides Only
+    const topsidesPrice = length * topsidesRate;
+    breakdown.push(`Topsides: ${length}ft × $${topsidesRate}/ft = $${topsidesPrice.toFixed(2)}`);
+    baseServiceSubtotal = topsidesPrice;
+
+  } else if (config.area === 'fullboat') {
+    // Full Boat = Hull + Topsides (no discount)
+    const hullPrice = length * hullRate;
+    const topsidesPrice = length * topsidesRate;
     breakdown.push(`Hull: ${length}ft × $${hullRate}/ft = $${hullPrice.toFixed(2)}`);
     breakdown.push(`Topsides: ${length}ft × $${topsidesRate}/ft = $${topsidesPrice.toFixed(2)}`);
-    
-    if (config.heavyOxidation) {
-      const hullOxidation = hullPrice * 0.2;
-      const topsidesOxidation = topsidesPrice * 0.2;
-      breakdown.push(`Heavy Oxidation (+20%): $${(hullOxidation + topsidesOxidation).toFixed(2)}`);
-      hullPrice += hullOxidation;
-      topsidesPrice += topsidesOxidation;
-    }
-    
-    subtotal = hullPrice + topsidesPrice;
-  } else {
-    // Handle single area (hull, topsides, or bowrider)
-    const rate = getGelcoatRate(length, config.area);
-    let basePrice = length * rate;
-    breakdown.push(`${config.area.charAt(0).toUpperCase() + config.area.slice(1)}: ${length}ft × $${rate}/ft = $${basePrice.toFixed(2)}`);
+    baseServiceSubtotal = hullPrice + topsidesPrice;
 
-    if (config.heavyOxidation) {
-      const oxidationCharge = basePrice * 0.2;
-      breakdown.push(`Heavy Oxidation (+20%): $${oxidationCharge.toFixed(2)}`);
-      basePrice += oxidationCharge;
-    }
-
-    subtotal = basePrice;
+  } else if (config.area === 'bowrider') {
+    // Bowrider Special = Hull + (Topsides × 0.6)
+    const hullPrice = length * hullRate;
+    const adjustedTopsidesPrice = length * topsidesRate * 0.6;
+    breakdown.push(`Hull: ${length}ft × $${hullRate}/ft = $${hullPrice.toFixed(2)}`);
+    breakdown.push(`Topsides (Bowrider 40% reduction): ${length}ft × $${topsidesRate}/ft × 0.6 = $${adjustedTopsidesPrice.toFixed(2)}`);
+    baseServiceSubtotal = hullPrice + adjustedTopsidesPrice;
   }
 
+  // Heavy oxidation surcharge applies to base service subtotal only
+  let oxidationCharge = 0;
+  if (config.heavyOxidation) {
+    oxidationCharge = baseServiceSubtotal * 0.2;
+    breakdown.push(`Heavy Oxidation Surcharge (+20%): $${oxidationCharge.toFixed(2)}`);
+  }
+
+  subtotal = baseServiceSubtotal + oxidationCharge;
+
+  // Add-ons applied after service subtotal
   if (config.radarArch) {
     subtotal += 175;
-    breakdown.push('Radar Arch: $175.00');
+    breakdown.push('Arch / Radar Arch: $175.00');
   }
 
   if (config.hardTop) {

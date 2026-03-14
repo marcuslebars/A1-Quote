@@ -32,6 +32,7 @@ import {
 import { Anchor, Download, Loader2, Ship, Waves } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import LearnMoreModal, { type ServiceKey } from "@/components/LearnMoreModal";
 
 export default function Home() {
   // Test mode: enabled by visiting ?test=true in the URL — never shown to customers
@@ -41,6 +42,14 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const submitQuote = trpc.quotes.submit.useMutation();
+
+  // Learn More modal state
+  const [learnMoreOpen, setLearnMoreOpen] = useState(false);
+  const [learnMoreService, setLearnMoreService] = useState<ServiceKey | null>(null);
+  const openLearnMore = (service: ServiceKey) => {
+    setLearnMoreService(service);
+    setLearnMoreOpen(true);
+  };
 
   // Boat details
   const [boatDetails, setBoatDetails] = useState<BoatDetails>({
@@ -301,6 +310,7 @@ export default function Home() {
                   <Label htmlFor="gelcoat" className="text-foreground font-semibold cursor-pointer">
                     Gelcoat Restoration
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('gelcoat')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.gelcoat && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
@@ -374,6 +384,7 @@ export default function Home() {
                   <Label htmlFor="exterior" className="text-foreground font-semibold cursor-pointer">
                     Exterior Detailing
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('exterior')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.exterior && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
@@ -442,6 +453,7 @@ export default function Home() {
                   <Label htmlFor="interior" className="text-foreground font-semibold cursor-pointer">
                     Interior Detailing
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('interior')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.interior && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
@@ -538,6 +550,7 @@ export default function Home() {
                   <Label htmlFor="ceramic" className="text-foreground font-semibold cursor-pointer">
                     Ceramic Coating
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('ceramic')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.ceramic && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-3">
@@ -584,6 +597,7 @@ export default function Home() {
                   <Label htmlFor="graphene" className="text-foreground font-semibold cursor-pointer">
                     Graphene Nano Coating
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('graphene')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.graphene && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-3">
@@ -622,6 +636,7 @@ export default function Home() {
                   <Label htmlFor="wetSanding" className="text-foreground font-semibold cursor-pointer">
                     Wet Sanding & Paint/Gelcoat Correction
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('wetSanding')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.wetSanding && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
@@ -663,6 +678,7 @@ export default function Home() {
                   <Label htmlFor="bottomPainting" className="text-foreground font-semibold cursor-pointer">
                     Bottom Painting
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('bottomPainting')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.bottomPainting && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-3">
@@ -717,6 +733,7 @@ export default function Home() {
                   <Label htmlFor="vinyl" className="text-foreground font-semibold cursor-pointer">
                     Vinyl Removal & Installation
                   </Label>
+                  <button type="button" onClick={() => openLearnMore('vinyl')} className="ml-auto text-xs font-medium text-[#00FFFF] hover:text-[#00FFFF]/80 hover:underline transition-colors">Learn More</button>
                 </div>
                 {selectedServices.vinyl && (
                   <div className="ml-6 p-4 rounded-lg bg-background/50 border border-border/30 space-y-4">
@@ -999,6 +1016,13 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Learn More Modal */}
+      <LearnMoreModal
+        open={learnMoreOpen}
+        onOpenChange={setLearnMoreOpen}
+        service={learnMoreService}
+      />
     </div>
   );
 }
