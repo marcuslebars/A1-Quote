@@ -67,7 +67,8 @@ app.use("/api/marina", marinaRouter);
 console.log('[Server] Marina webhook configured');
 
 // PDF Quote Download endpoint
-app.post("/api/quote/download-pdf", express.json(), (req, res) => {
+app.post("/api/quote/download-pdf", express.json(), async (req, res) => {
+  const startTime = Date.now();
   try {
     const { customerName, customerEmail, customerPhone, boatLength, boatType, serviceLocation, services, estimatedTotal, breakdown } = req.body;
     
@@ -75,7 +76,7 @@ app.post("/api/quote/download-pdf", express.json(), (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const pdf = generateQuotePDF({
+    const pdfBuffer = await generateQuotePDF({
       customerName,
       customerEmail,
       customerPhone,
@@ -87,15 +88,17 @@ app.post("/api/quote/download-pdf", express.json(), (req, res) => {
       breakdown,
     });
 
-    // Set response headers
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="A1-Quote-${customerName.replace(/\s+/g, '-')}-${Date.now()}.pdf"`);
+    const elapsed = Date.now() - startTime;
+    console.log(`[PDF] Generated quote PDF in ${elapsed}ms (${(pdfBuffer.length / 1024).toFixed(1)}KB)`);
 
-    // Pipe PDF to response
-    pdf.pipe(res);
+    // Send complete buffer as response
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Length', pdfBuffer.length.toString());
+    res.setHeader('Content-Disposition', `attachment; filename="A1-Quote-${customerName.replace(/\s+/g, '-')}-${Date.now()}.pdf"`);
+    res.send(pdfBuffer);
   } catch (error: any) {
     console.error('[PDF] Error generating quote PDF:', error);
-    res.status(500).json({ error: 'Failed to generate PDF' });
+    res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
   }
 });
 console.log('[Server] PDF download endpoint configured');
