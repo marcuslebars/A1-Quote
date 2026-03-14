@@ -1,5 +1,10 @@
 import PDFDocument from 'pdfkit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import type { ServiceSelections } from '../client/src/lib/pricing';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface QuotePDFParams {
   customerName: string;
@@ -84,13 +89,19 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
     const headerH = 100;
     doc.rect(0, 0, W, headerH).fill(C.headerBg);
 
-    // Left: Company name
-    doc.fillColor(C.cyan).font('Helvetica-Bold').fontSize(24)
-       .text('A1 MARINE CARE', MX, 28);
+    // Left: Company logo
+    const logoPath = path.join(__dirname, '..', 'server', 'assets', 'logo.png');
+    try {
+      doc.image(logoPath, MX, 12, { height: 52 });
+    } catch {
+      // Fallback to text if logo file not found
+      doc.fillColor(C.cyan).font('Helvetica-Bold').fontSize(24)
+         .text('A1 MARINE CARE', MX, 28);
+    }
     doc.fillColor(C.white).font('Helvetica').fontSize(9)
-       .text('Premium Boat Detailing & Protection', MX, 56);
+       .text('Premium Boat Detailing & Protection', MX, 68);
     doc.fillColor(C.textMuted).fontSize(8)
-       .text('(705) 996-1010  |  contact@a1marinecare.ca  |  a1marinecare.ca', MX, 72);
+       .text('(705) 996-1010  |  contact@a1marinecare.ca  |  a1marinecare.ca', MX, 82);
 
     // Right: Quote label
     doc.fillColor(C.cyan).font('Helvetica-Bold').fontSize(12)
