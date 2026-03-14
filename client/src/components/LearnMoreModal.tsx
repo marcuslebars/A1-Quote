@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-type ServiceKey =
+export type ServiceKey =
   | "gelcoat"
   | "exterior"
   | "interior"
