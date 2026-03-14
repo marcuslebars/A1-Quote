@@ -29,7 +29,7 @@ import {
   VinylConfig,
   WetSandingConfig
 } from "@/lib/pricing";
-import { Anchor, Loader2, Ship, Waves } from "lucide-react";
+import { Anchor, Download, Loader2, Ship, Waves } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 
@@ -459,36 +459,10 @@ export default function Home() {
                       </Select>
                     </div>
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label className="text-foreground font-medium">Upload Interior Photos (Minimum 3 Required) *</Label>
-                        <Input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png"
-                          multiple
-                          onChange={(e) => {
-                            const files = Array.from(e.target.files || []);
-                            if (files.length > 10) {
-                              alert('Maximum 10 photos allowed');
-                              return;
-                            }
-                            setInteriorConfig({ ...interiorConfig, photos: files });
-                          }}
-                          className="bg-input border-border text-foreground"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {interiorConfig.photos.length} photo(s) uploaded (min: 3, max: 10)
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                        <p className="text-sm text-foreground">
+                          <span className="font-semibold">Photos will be requested after checkout.</span> After you complete your deposit, we'll send you an email requesting 3-10 interior photos so our team can prepare for your service.
                         </p>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2">
-                        <Checkbox
-                          id="photoConfirmation"
-                          checked={interiorConfig.photoConfirmation}
-                          onCheckedChange={(checked) => setInteriorConfig({ ...interiorConfig, photoConfirmation: checked as boolean })}
-                        />
-                        <Label htmlFor="photoConfirmation" className="text-sm text-foreground cursor-pointer leading-tight">
-                          I confirm these photos accurately represent the current condition of the boat interior. *
-                        </Label>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-3">
@@ -893,61 +867,99 @@ export default function Home() {
                     )}
                   </div>
                 ) : canPayDeposit && (
-                  <Button
-                    size="lg"
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
-                    disabled={isSubmitting}
-                    onClick={async () => {
-                      setIsSubmitting(true);
-                      try {
-                        // Submit quote to backend
-                        const result = await submitQuote.mutateAsync({
-                          customerName: contactInfo.fullName,
-                          customerEmail: contactInfo.email,
-                          customerPhone: contactInfo.phone,
-                          boatLength: boatDetails.length,
-                          boatType: boatDetails.type,
-                          serviceLocation: boatDetails.location,
-                          estimatedTotal: Math.round((estimate?.subtotal || 0) * 100), // convert to cents
-                          requiresManualReview: false,
-                          servicesConfig: {
-                            selectedServices,
-                            gelcoat: selectedServices.gelcoat ? gelcoatConfig : undefined,
-                            exterior: selectedServices.exterior ? exteriorConfig : undefined,
-                            interior: selectedServices.interior ? interiorConfig : undefined,
-                            ceramic: selectedServices.ceramic ? ceramicConfig : undefined,
-                            graphene: selectedServices.graphene ? grapheneConfig : undefined,
-                            wetSanding: selectedServices.wetSanding ? wetSandingConfig : undefined,
-                            bottomPainting: selectedServices.bottomPainting ? bottomPaintingConfig : undefined,
-                            vinyl: selectedServices.vinyl ? vinylConfig : undefined,
-                          },
-                        });
-                        
-                        // Store quote ID in localStorage for thank you page
-                        localStorage.setItem('lastQuoteId', result.quoteId.toString());
-                        
-                        // Redirect to Stripe payment (or bypass in test mode)
-                        if (isTestMode) {
-                          window.location.href = '/thank-you';
-                        } else {
-                          window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                  <div className="space-y-3">
+                    <Button
+                      size="lg"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg h-14 rounded-xl"
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        setIsSubmitting(true);
+                        try {
+                          const result = await submitQuote.mutateAsync({
+                            customerName: contactInfo.fullName,
+                            customerEmail: contactInfo.email,
+                            customerPhone: contactInfo.phone,
+                            boatLength: boatDetails.length,
+                            boatType: boatDetails.type,
+                            serviceLocation: boatDetails.location,
+                            estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
+                            requiresManualReview: false,
+                            servicesConfig: {
+                              selectedServices,
+                              gelcoat: selectedServices.gelcoat ? gelcoatConfig : undefined,
+                              exterior: selectedServices.exterior ? exteriorConfig : undefined,
+                              interior: selectedServices.interior ? interiorConfig : undefined,
+                              ceramic: selectedServices.ceramic ? ceramicConfig : undefined,
+                              graphene: selectedServices.graphene ? grapheneConfig : undefined,
+                              wetSanding: selectedServices.wetSanding ? wetSandingConfig : undefined,
+                              bottomPainting: selectedServices.bottomPainting ? bottomPaintingConfig : undefined,
+                              vinyl: selectedServices.vinyl ? vinylConfig : undefined,
+                            },
+                          });
+                          localStorage.setItem('lastQuoteId', result.quoteId.toString());
+                          if (isTestMode) {
+                            window.location.href = '/thank-you';
+                          } else {
+                            window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+                          }
+                        } catch (error) {
+                          console.error('Failed to submit quote:', error);
+                          alert('Failed to submit quote. Please try again.');
+                          setIsSubmitting(false);
                         }
-                      } catch (error) {
-                        console.error('Failed to submit quote:', error);
-                        alert('Failed to submit quote. Please try again.');
-                        setIsSubmitting(false);
-                      }
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                        Submitting...
-                      </>
-                    ) : (
-                      "Pay $250 Deposit"
-                    )}
-                  </Button>
+                      }}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Pay $250 Deposit"
+                      )}
+                    </Button>
+                    
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full font-semibold text-lg h-14 rounded-xl border-border/50 hover:bg-background/50"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/quote/download-pdf', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              customerName: contactInfo.fullName,
+                              customerEmail: contactInfo.email,
+                              customerPhone: contactInfo.phone,
+                              boatLength: boatDetails.length,
+                              boatType: boatDetails.type,
+                              serviceLocation: boatDetails.location,
+                              services,
+                              estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
+                              breakdown: estimate?.breakdown || [],
+                            }),
+                          });
+                          if (!response.ok) throw new Error('Failed to generate PDF');
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `A1-Quote-${contactInfo.fullName.replace(/\s+/g, '-')}-${Date.now()}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                        } catch (error) {
+                          console.error('Failed to download PDF:', error);
+                          alert('Failed to download PDF. Please try again.');
+                        }
+                      }}
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Download Quote as PDF
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>

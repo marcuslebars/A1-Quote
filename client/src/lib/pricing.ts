@@ -39,8 +39,8 @@ export interface InteriorConfig {
   galleyDeepClean: boolean;
   petHairRemoval: boolean;
   ozoneInterior: boolean;
-  photos: File[];
-  photoConfirmation: boolean;
+  photos?: File[];
+  photoConfirmation?: boolean;
 }
 
 export interface CeramicConfig {
@@ -294,14 +294,9 @@ export function calculateInterior(length: number, boatType: string, config: Inte
     reviewReasons.push('Yacht with Deep Clean or Restoration requires manual review');
   }
   
-  if (config.photos.length < 3) {
-    reviewReasons.push('Minimum 3 interior photos required');
-  }
+  // Note: Photos are no longer required for initial quote calculation
+  // They will be requested via email after checkout if interior service is selected
   
-  if (!config.photoConfirmation) {
-    reviewReasons.push('Photo confirmation required');
-  }
-
   // If manual review required, return early
   if (reviewReasons.length > 0) {
     return { subtotal: 0, breakdown, requiresManualReview: true, reviewReasons };

@@ -3,7 +3,7 @@ import { createQuote, getAllQuotes, getQuoteById, getQuoteByPhone, getQuoteByStr
 import { publicProcedure, router } from "./trpc";
 import { triggerMarinaCall } from "./elevenlabs";
 import { createCalComBooking, getCalComAvailability } from "./calcom";
-import { sendBookingConfirmationEmail } from "./email";
+import { sendBookingConfirmationEmail, sendInteriorPhotoRequestEmail } from "./email";
 
 export const appRouter = router({
   quotes: router({
@@ -41,6 +41,23 @@ export const appRouter = router({
             reviewReasons: input.reviewReasons || [],
           },
         });
+
+        // If interior service is selected, send photo request email
+        if (input.servicesConfig?.selectedServices?.interior) {
+          try {
+            await sendInteriorPhotoRequestEmail({
+              customerName: input.customerName,
+              customerEmail: input.customerEmail,
+              boatLength: input.boatLength,
+              boatType: input.boatType,
+              serviceLocation: input.serviceLocation,
+            });
+            console.log('[Quote] Interior photo request email sent to', input.customerEmail);
+          } catch (error: any) {
+            console.error('[Quote] Failed to send interior photo request email:', error.message);
+            // Don't fail the quote submission if email fails
+          }
+        }
 
         return {
           success: true,

@@ -7,6 +7,7 @@ import { handleStripeWebhook } from "./stripe";
 import marinaRouter from "./marina";
 import { connectDB } from './db/mongodb';
 import { startReminderScheduler } from './reminderScheduler';
+import { generateQuotePDF } from './pdf';
 import path from 'path';
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -64,6 +65,40 @@ console.log('[Server] tRPC configured');
 // Marina AI webhook
 app.use("/api/marina", marinaRouter);
 console.log('[Server] Marina webhook configured');
+
+// PDF Quote Download endpoint
+app.post("/api/quote/download-pdf", express.json(), (req, res) => {
+  try {
+    const { customerName, customerEmail, customerPhone, boatLength, boatType, serviceLocation, services, estimatedTotal, breakdown } = req.body;
+    
+    if (!customerName || !boatLength || !boatType || !services || estimatedTotal === undefined || !breakdown) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const pdf = generateQuotePDF({
+      customerName,
+      customerEmail,
+      customerPhone,
+      boatLength,
+      boatType,
+      serviceLocation,
+      services,
+      estimatedTotal,
+      breakdown,
+    });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="A1-Quote-${customerName.replace(/\s+/g, '-')}-${Date.now()}.pdf"`);
+
+    // Pipe PDF to response
+    pdf.pipe(res);
+  } catch (error: any) {
+    console.error('[PDF] Error generating quote PDF:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
+  }
+});
+console.log('[Server] PDF download endpoint configured');
 
 // Development: Vite dev server (dynamic import to avoid loading vite in production)
 if (process.env.NODE_ENV === "development") {

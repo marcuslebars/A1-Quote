@@ -175,6 +175,126 @@ export async function sendBookingConfirmationEmail(params: BookingConfirmationPa
   }
 }
 
+// ─── Interior Photo Request Email ───────────────────────────────────────────────────
+
+export interface InteriorPhotoRequestParams {
+  customerName: string;
+  customerEmail: string;
+  boatLength: number;
+  boatType: string;
+  serviceLocation: string;
+}
+
+export async function sendInteriorPhotoRequestEmail(params: InteriorPhotoRequestParams) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[Email] RESEND_API_KEY is not set — skipping photo request email");
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interior Photos Needed – A1 Marine Care</title>
+  <style>
+    body { margin: 0; padding: 0; background: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { max-width: 600px; margin: 0 auto; padding: 32px 16px; }
+    .card { background: #111111; border-radius: 16px; overflow: hidden; border: 1px solid #1f1f1f; }
+    .header { background: #000000; padding: 32px 40px; text-align: center; border-bottom: 1px solid #1a1a1a; }
+    .header img { height: 64px; width: auto; }
+    .body { padding: 40px; }
+    .badge { display: inline-block; background: rgba(0,255,255,0.15); border: 1px solid rgba(0,255,255,0.3); color: #00FFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 14px; border-radius: 20px; margin-bottom: 20px; }
+    .title { font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; margin: 0 0 8px; }
+    .subtitle { font-size: 15px; color: #888888; text-align: center; margin: 0 0 32px; }
+    .detail-box { background: #0d0d0d; border: 1px solid #222222; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .detail-label { font-size: 11px; font-weight: 600; color: #555555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+    .detail-value { font-size: 15px; color: #e0e0e0; font-weight: 500; margin-bottom: 16px; }
+    .detail-value:last-child { margin-bottom: 0; }
+    .instructions { background: #0d0d0d; border: 1px solid #222222; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .instructions h3 { margin: 0 0 16px; color: #ffffff; font-size: 16px; }
+    .instructions ol { margin: 0; padding-left: 20px; color: #e0e0e0; }
+    .instructions li { margin-bottom: 12px; line-height: 1.6; }
+    .instructions li:last-child { margin-bottom: 0; }
+    .divider { height: 1px; background: #1a1a1a; margin: 24px 0; }
+    .cta-row { text-align: center; margin-bottom: 24px; }
+    .btn { display: inline-block; padding: 14px 32px; background: #00FFFF; color: #000000; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 8px; }
+    .footer { padding: 24px 40px; border-top: 1px solid #1a1a1a; text-align: center; }
+    .footer p { font-size: 13px; color: #555555; margin: 4px 0; }
+    .footer a { color: #00FFFF; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="header">
+        <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663289180469/WGIEJYNWHRlJZpOd.png" alt="A1 Marine Care" />
+      </div>
+      <div class="body">
+        <div style="text-align:center;">
+          <div class="badge">📸 Interior Photos Needed</div>
+        </div>
+        <h1 class="title">Help Us Prepare for Your Service</h1>
+        <p class="subtitle">Hi ${params.customerName}, we need a few photos of your boat's interior to get ready for your upcoming detailing service.</p>
+
+        <div class="detail-box">
+          <div class="detail-label">Boat Details</div>
+          <div class="detail-value">${params.boatLength}ft ${params.boatType}</div>
+          <div class="detail-label">Service Location</div>
+          <div class="detail-value">${params.serviceLocation}</div>
+        </div>
+
+        <div class="instructions">
+          <h3>What We Need</h3>
+          <ol>
+            <li><strong>3–10 photos</strong> of your boat's interior in its current condition</li>
+            <li>Include photos of cabins, galley, head, and any areas with visible wear or damage</li>
+            <li>Natural lighting is best — avoid flash if possible</li>
+            <li>Send clear, high-quality images (JPG or PNG)</li>
+          </ol>
+        </div>
+
+        <div class="cta-row">
+          <a href="mailto:contact@a1marinecare.ca?subject=Interior%20Photos%20for%20Boat%20Service%20-%20${params.customerName.replace(/\\s+/g, '%20')}" class="btn">Send Photos via Email</a>
+        </div>
+
+        <div class="divider"></div>
+
+        <p style="font-size:14px;color:#888888;text-align:center;margin:0;">
+          Simply reply to this email with your photos attached, or send them to <a href="mailto:contact@a1marinecare.ca" style="color:#00FFFF;text-decoration:none;">contact@a1marinecare.ca</a>. Our team will review them and confirm your service details.
+        </p>
+      </div>
+      <div class="footer">
+        <p><strong style="color:#cccccc;">A1 Marine Care</strong></p>
+        <p><a href="tel:+17059961010">(705) 996-1010</a> &nbsp;·&nbsp; <a href="mailto:contact@a1marinecare.ca">contact@a1marinecare.ca</a></p>
+        <p><a href="https://a1marinecare.ca">a1marinecare.ca</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const result = await getResend().emails.send({
+      from: "A1 Marine Care <bookings@a1marinecare.ca>",
+      to: [params.customerEmail],
+      subject: `Interior Photos Needed for Your Boat Service – ${params.boatLength}ft ${params.boatType}`,
+      html,
+    });
+
+    if (result.error) {
+      console.error("[Email] Resend error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    console.log("[Email] Photo request sent to", params.customerEmail, "id:", result.data?.id);
+    return { success: true, id: result.data?.id };
+  } catch (err: any) {
+    console.error("[Email] Failed to send photo request:", err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // ─── 24-hour reminder email ───────────────────────────────────────────────────
 
 export interface ReminderEmailParams {
