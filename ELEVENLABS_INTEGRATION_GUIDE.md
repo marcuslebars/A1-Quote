@@ -366,7 +366,7 @@ const handleDepositClick = () => {
   });
 
   // Stripe payment link with metadata
-  const stripeUrl = \`https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01?prefilled_email=\${encodeURIComponent(contactInfo.email)}&client_reference_id=\${Date.now()}\`;
+  const stripeUrl = \`https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04?prefilled_email=\${encodeURIComponent(contactInfo.email)}&client_reference_id=\${Date.now()}\`;
   
   window.location.href = stripeUrl;
 };
@@ -402,7 +402,7 @@ const handleDepositClick = async () => {
   const { quoteId } = await quoteResponse.json();
 
   // Redirect to Stripe with quote ID
-  const stripeUrl = \`https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01?client_reference_id=\${quoteId}&prefilled_email=\${encodeURIComponent(contactInfo.email)}\`;
+  const stripeUrl = \`https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04?client_reference_id=\${quoteId}&prefilled_email=\${encodeURIComponent(contactInfo.email)}\`;
   
   window.location.href = stripeUrl;
 };

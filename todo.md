@@ -87,10 +87,10 @@
 - [ ] Verify payment redirects work correctly
 
 ## Update Stripe Payment Link
-- [x] Change payment link to https://buy.stripe.com/7sY28r85acl96iwb1rgbm02
+- [x] Change payment link to https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04
 
 ## Update to Active Stripe Link
-- [x] Change payment link to https://buy.stripe.com/14A9AT3OUeth4aoglLgbm03
+- [x] Change payment link to https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04
 
 ## Marina AI Webhook Integration
 - [x] Create /api/marina/context endpoint with ElevenLabs conversation_initiation_client_data format
@@ -249,7 +249,7 @@
 - [ ] Save checkpoint
 
 ## Update Stripe Payment Link
-- [x] Update Stripe payment link to new URL: https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01
+- [x] Update Stripe payment link to new URL: https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04
 - [ ] Save checkpoint
 
 ## Test Mode Bypass for Stripe Checkout

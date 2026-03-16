@@ -90,7 +90,7 @@ curl -X POST http://localhost:3000/api/webhooks/stripe \
 
 ### Current Implementation
 
-The current Stripe Payment Link (`https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01`) is a **fixed link** that does NOT include quote-specific metadata.
+The current Stripe Payment Link (`https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04`) is a **fixed link** that does NOT include quote-specific metadata.
 
 ### Recommended Upgrade
 
@@ -138,7 +138,7 @@ const session = await stripe.checkout.sessions.create({
 Keep using Payment Links but append quote ID as URL parameter:
 
 ```typescript
-const paymentUrl = `https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01?client_reference_id=${quoteId}`;
+const paymentUrl = `https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04?client_reference_id=${quoteId}`;
 ```
 
 Then update the webhook handler to read `client_reference_id` instead of `metadata.quoteId`.

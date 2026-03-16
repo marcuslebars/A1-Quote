@@ -91,7 +91,7 @@ When services are selected, the estimate card shows:
 
 - **Pay Deposit Button**: Appears when all required fields are filled and at least one service is selected
 - **Payment Link**: Direct link to Stripe payment page
-- **Current URL**: `https://buy.stripe.com/4gM3cvetybh54ao8ww`
+- **Current URL**: `https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04`
 - **Post-Payment Redirect**: Configure in Stripe Dashboard to redirect to Wix Bookings page
 
 ## Stripe Configuration

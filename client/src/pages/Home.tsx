@@ -210,7 +210,7 @@ export default function Home() {
       if (isTestMode) {
         window.location.href = '/thank-you';
       } else {
-        window.location.href = "https://buy.stripe.com/4gM3cvetybh54ao8Tjgbm01";
+        window.location.href = "https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04";
       }
     } catch (error) {
       console.error('Failed to submit quote:', error);
