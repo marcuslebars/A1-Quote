@@ -67,6 +67,7 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const submitQuote = trpc.quotes.submit.useMutation();
+  const createCheckoutSession = trpc.quotes.createCheckoutSession.useMutation();
 
   // Learn More modal
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
@@ -207,10 +208,44 @@ export default function Home() {
         },
       });
       localStorage.setItem('lastQuoteId', result.quoteId.toString());
+      
       if (isTestMode) {
         window.location.href = '/thank-you';
       } else {
-        window.location.href = "https://buy.stripe.com/4gMfZh716cl94ao6Lbgbm04";
+        // Build selected services array for Stripe
+        const selectedServicesArray: any[] = [];
+        let serviceId = 1;
+        const breakdown = (estimate?.breakdown || []) as any[];
+        if (selectedServices.gelcoat) selectedServicesArray.push({ id: serviceId++, name: 'Gelcoat Restoration', price: breakdown?.find((b: any) => b.label === 'Gelcoat Restoration')?.amount || 0 });
+        if (selectedServices.exterior) selectedServicesArray.push({ id: serviceId++, name: 'Exterior Detailing', price: breakdown?.find((b: any) => b.label === 'Exterior Detailing')?.amount || 0 });
+        if (selectedServices.interior) selectedServicesArray.push({ id: serviceId++, name: 'Interior Detailing', price: breakdown?.find((b: any) => b.label === 'Interior Detailing')?.amount || 0 });
+        if (selectedServices.ceramic) selectedServicesArray.push({ id: serviceId++, name: 'Ceramic Coating', price: breakdown?.find((b: any) => b.label === 'Ceramic Coating')?.amount || 0 });
+        if (selectedServices.graphene) selectedServicesArray.push({ id: serviceId++, name: 'Graphene Nano Coating', price: breakdown?.find((b: any) => b.label === 'Graphene Nano Coating')?.amount || 0 });
+        if (selectedServices.wetSanding) selectedServicesArray.push({ id: serviceId++, name: 'Wet Sanding & Correction', price: breakdown?.find((b: any) => b.label === 'Wet Sanding & Correction')?.amount || 0 });
+        if (selectedServices.bottomPainting) selectedServicesArray.push({ id: serviceId++, name: 'Bottom Painting', price: breakdown?.find((b: any) => b.label === 'Bottom Painting')?.amount || 0 });
+        if (selectedServices.vinyl) selectedServicesArray.push({ id: serviceId++, name: 'Vinyl Removal & Installation', price: breakdown?.find((b: any) => b.label === 'Vinyl Removal & Installation')?.amount || 0 });
+        
+        // Create Stripe checkout session
+        const checkoutResult = await createCheckoutSession.mutateAsync({
+          quoteId: result.quoteId.toString(),
+          customerName: contactInfo.fullName,
+          customerEmail: contactInfo.email,
+          customerPhone: contactInfo.phone,
+          boatLength: boatDetails.length,
+          boatType: boatDetails.type,
+          serviceLocation: boatDetails.location,
+          selectedServices: selectedServicesArray,
+          depositAmount: 100, // $1 in cents
+          estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
+          successUrl: 'https://booking.a1marinecare.ca',
+          cancelUrl: window.location.href,
+        });
+        
+        if (checkoutResult.url) {
+          window.location.href = checkoutResult.url;
+        } else {
+          throw new Error('No checkout URL returned');
+        }
       }
     } catch (error) {
       console.error('Failed to submit quote:', error);
@@ -702,9 +737,9 @@ export default function Home() {
                       {isSubmitting ? (
                         <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
                       ) : estimate.requiresManualReview ? (
-                        "Submit for Review ($250 Deposit)"
+                        "Submit for Review ($1 Deposit)"
                       ) : (
-                        "Pay $250 Deposit"
+                        "Pay $1 Deposit"
                       )}
                     </Button>
                     {!estimate.requiresManualReview && (

@@ -4,6 +4,7 @@ import { publicProcedure, router } from "./trpc";
 import { triggerMarinaCall } from "./elevenlabs";
 import { createCalComBooking, getCalComAvailability } from "./calcom";
 import { sendBookingConfirmationEmail, sendInteriorPhotoRequestEmail } from "./email";
+import Stripe from "stripe";
 
 export const appRouter = router({
   quotes: router({
@@ -34,7 +35,7 @@ export const appRouter = router({
           subtotal: input.estimatedTotal,
           tax: 0,
           total: input.estimatedTotal,
-          depositAmount: 25000, // $250 in cents
+          depositAmount: 100, // $1 in cents
           services: {
             config: input.servicesConfig,
             requiresManualReview: input.requiresManualReview,
@@ -90,6 +91,94 @@ export const appRouter = router({
           throw new Error("Quote not found for this session");
         }
         return quote;
+      }),
+    // Create Stripe checkout session with quote data
+    createCheckoutSession: publicProcedure
+      .input(
+        z.object({
+          quoteId: z.string(),
+          customerName: z.string(),
+          customerEmail: z.string().email(),
+          customerPhone: z.string(),
+          boatLength: z.number(),
+          boatType: z.string(),
+          boatMakeModel: z.string().optional(),
+          serviceLocation: z.string(),
+          marina: z.string().optional(),
+          city: z.string().optional(),
+          selectedServices: z.array(z.object({ id: z.number(), name: z.string(), price: z.number() })),
+          depositAmount: z.number(),
+          estimatedTotal: z.number(),
+          successUrl: z.string(),
+          cancelUrl: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        if (!process.env.STRIPE_SECRET_KEY) {
+          throw new Error('Stripe is not configured');
+        }
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+        // Build service description
+        const serviceDescriptions = input.selectedServices.map(s => `${s.name} ($${(s.price / 100).toFixed(2)})`).join(', ');
+
+        // Build booking portal URL with quote data
+        const bookingPortalParams = new URLSearchParams({
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          boatName: input.boatType,
+          boatMakeModel: input.boatMakeModel || '',
+          boatLength: input.boatLength.toString(),
+          boatType: input.boatType,
+          serviceLocation: input.serviceLocation,
+          marina: input.marina || '',
+          city: input.city || '',
+          services: JSON.stringify(input.selectedServices),
+          depositPaid: (input.depositAmount / 100).toFixed(2),
+          estimatedTotal: (input.estimatedTotal / 100).toFixed(2),
+        });
+
+        const bookingUrl = `${input.successUrl}?${bookingPortalParams.toString()}`;
+
+        try {
+          const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+              {
+                price_data: {
+                  currency: 'cad',
+                  product_data: {
+                    name: 'A1 Marine Care - Service Deposit',
+                    description: serviceDescriptions,
+                  },
+                  unit_amount: input.depositAmount,
+                },
+                quantity: 1,
+              },
+            ],
+            mode: 'payment',
+            success_url: bookingUrl,
+            cancel_url: input.cancelUrl,
+            customer_email: input.customerEmail,
+            metadata: {
+              quoteId: input.quoteId,
+              customerName: input.customerName,
+              boatType: input.boatType,
+              boatLength: input.boatLength.toString(),
+            },
+          });
+
+          return {
+            success: true,
+            sessionId: session.id,
+            url: session.url,
+          };
+        } catch (error: any) {
+          console.error('[Stripe] Error creating checkout session:', error);
+          throw new Error(`Failed to create checkout session: ${error.message}`);
+        }
       }),
   }),
 
