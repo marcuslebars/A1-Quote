@@ -34,7 +34,7 @@ export default function StickyPricePanel({
   onDownloadPDF,
 }: StickyPricePanelProps) {
   const hasItems = lineItems.length > 0;
-  const deposit = 250;
+  const deposit = 1;
   const [mobileExpanded, setMobileExpanded] = useState(false);
 
   return (
@@ -88,7 +88,7 @@ export default function StickyPricePanel({
                   <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                  $250 deposit secures your service appointment and is applied to the final invoice.
+                  $1 deposit secures your service appointment and is applied to the final invoice.
                 </p>
               </div>
             )}
@@ -131,9 +131,9 @@ export default function StickyPricePanel({
                     Processing...
                   </>
                 ) : requiresManualReview ? (
-                  "Submit for Review ($250 Deposit)"
+                  "Submit for Review ($1 Deposit)"
                 ) : (
-                  "Pay $250 Deposit"
+                  "Pay $1 Deposit"
                 )}
               </Button>
 
@@ -246,7 +246,7 @@ export default function StickyPricePanel({
                       <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
                     </div>
                     <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                      $250 deposit secures your service appointment and is applied to the final invoice.
+                      $1 deposit secures your service appointment and is applied to the final invoice.
                     </p>
                   </div>
                 )}
@@ -289,9 +289,9 @@ export default function StickyPricePanel({
                         Processing...
                       </>
                     ) : requiresManualReview ? (
-                      "Submit for Review ($250 Deposit)"
+                      "Submit for Review ($1 Deposit)"
                     ) : (
-                      "Pay $250 Deposit"
+                      "Pay $1 Deposit"
                     )}
                   </Button>
 

@@ -280,7 +280,7 @@ export default function ThankYou() {
               <p className="text-gray-400 text-lg">
                 {isTestMode
                   ? 'Stripe checkout bypassed. Use the chat below to test the booking flow.'
-                  : 'Your $250 deposit has been successfully processed.'}
+                  : 'Your $1 deposit has been successfully processed.'}
               </p>
             </div>
           </div>

@@ -699,10 +699,10 @@ export default function Home() {
                     <>
                       <div className="flex items-center justify-between py-3 border-t border-white/10">
                         <span className="text-sm text-white/50">Deposit Required</span>
-                        <span className="text-lg font-semibold text-white">$250.00</span>
+                        <span className="text-lg font-semibold text-white">$1.00</span>
                       </div>
                       <p className="text-xs text-white/30">
-                        $250 deposit secures your service appointment and is applied to the final invoice.
+                        $1 deposit secures your service appointment and is applied to the final invoice.
                       </p>
                     </>
                   )}
@@ -789,6 +789,9 @@ export default function Home() {
             </p>
             <p className="text-xs text-white/20 pt-2">
               &copy; 2026 A1 Marine Care. After making your deposit, you'll be contacted by our agent to schedule your service date and time.
+            </p>
+            <p className="text-xs text-white/20 pt-1">
+              <a href="/terms" className="hover:text-[#00FFFF]/60 transition-colors underline underline-offset-2">Terms of Service</a>
             </p>
           </div>
         </div>
