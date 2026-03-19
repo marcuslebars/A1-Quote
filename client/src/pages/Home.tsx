@@ -12,6 +12,14 @@ import {
   BoatDetails,
   BottomPaintingConfig,
   calculateTotal,
+  calculateGelcoat,
+  calculateExterior,
+  calculateInterior,
+  calculateCeramic,
+  calculateGraphene,
+  calculateWetSanding,
+  calculateBottomPainting,
+  calculateVinyl,
   CeramicConfig,
   ContactInfo,
   ExteriorConfig,
@@ -181,6 +189,45 @@ export default function Home() {
     return items;
   }, [estimate]);
 
+  // ── Per-service subtotals (used for Stripe description) ──
+  const perServiceSubtotals = useMemo(() => {
+    if (!boatDetails.length) return [];
+    const items: { name: string; price: number }[] = [];
+    if (selectedServices.gelcoat) {
+      const r = calculateGelcoat(boatDetails.length, gelcoatConfig);
+      items.push({ name: 'Gelcoat Restoration', price: r.subtotal });
+    }
+    if (selectedServices.exterior) {
+      const r = calculateExterior(boatDetails.length, exteriorConfig);
+      items.push({ name: 'Exterior Detailing', price: r.subtotal });
+    }
+    if (selectedServices.interior) {
+      const r = calculateInterior(boatDetails.length, boatDetails.type, interiorConfig);
+      items.push({ name: 'Interior Detailing', price: r.subtotal });
+    }
+    if (selectedServices.ceramic) {
+      const r = calculateCeramic(boatDetails.length, ceramicConfig);
+      items.push({ name: 'Ceramic Coating', price: r.subtotal });
+    }
+    if (selectedServices.graphene) {
+      const r = calculateGraphene(boatDetails.length, grapheneConfig);
+      items.push({ name: 'Graphene Nano Coating', price: r.subtotal });
+    }
+    if (selectedServices.wetSanding) {
+      const r = calculateWetSanding(boatDetails.length, wetSandingConfig);
+      items.push({ name: 'Wet Sanding & Correction', price: r.subtotal });
+    }
+    if (selectedServices.bottomPainting) {
+      const r = calculateBottomPainting(boatDetails.length, bottomPaintingConfig);
+      items.push({ name: 'Bottom Painting', price: r.subtotal });
+    }
+    if (selectedServices.vinyl) {
+      const r = calculateVinyl(boatDetails.length, vinylConfig);
+      items.push({ name: 'Vinyl Services', price: r.subtotal });
+    }
+    return items;
+  }, [boatDetails.length, boatDetails.type, selectedServices, gelcoatConfig, exteriorConfig, interiorConfig, ceramicConfig, grapheneConfig, wetSandingConfig, bottomPaintingConfig, vinylConfig]);
+
   // ── Submit handler ──
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -212,11 +259,11 @@ export default function Home() {
       if (isTestMode) {
         window.location.href = '/thank-you';
       } else {
-        // Build selected services array for Stripe using lineItems (already correctly parsed from breakdown strings)
-        const selectedServicesArray = lineItems.map((item, i) => ({
+        // Build selected services array for Stripe using per-service subtotals (accurate prices from pricing engine)
+        const selectedServicesArray = perServiceSubtotals.map((item, i) => ({
           id: i + 1,
-          name: item.label,
-          price: item.amount,
+          name: item.name,
+          price: item.price,
         }));
         
         // Create Stripe checkout session
