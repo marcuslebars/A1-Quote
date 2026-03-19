@@ -279,7 +279,7 @@ export default function Home() {
           selectedServices: selectedServicesArray,
           depositAmount: 100, // $1 in cents
           estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
-          successUrl: 'https://booking.a1marinecare.ca',
+          successUrl: 'https://booking.a1marinecare.ca/booking',
           cancelUrl: window.location.href,
         });
         
