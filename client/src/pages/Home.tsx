@@ -212,18 +212,12 @@ export default function Home() {
       if (isTestMode) {
         window.location.href = '/thank-you';
       } else {
-        // Build selected services array for Stripe
-        const selectedServicesArray: any[] = [];
-        let serviceId = 1;
-        const breakdown = (estimate?.breakdown || []) as any[];
-        if (selectedServices.gelcoat) selectedServicesArray.push({ id: serviceId++, name: 'Gelcoat Restoration', price: breakdown?.find((b: any) => b.label === 'Gelcoat Restoration')?.amount || 0 });
-        if (selectedServices.exterior) selectedServicesArray.push({ id: serviceId++, name: 'Exterior Detailing', price: breakdown?.find((b: any) => b.label === 'Exterior Detailing')?.amount || 0 });
-        if (selectedServices.interior) selectedServicesArray.push({ id: serviceId++, name: 'Interior Detailing', price: breakdown?.find((b: any) => b.label === 'Interior Detailing')?.amount || 0 });
-        if (selectedServices.ceramic) selectedServicesArray.push({ id: serviceId++, name: 'Ceramic Coating', price: breakdown?.find((b: any) => b.label === 'Ceramic Coating')?.amount || 0 });
-        if (selectedServices.graphene) selectedServicesArray.push({ id: serviceId++, name: 'Graphene Nano Coating', price: breakdown?.find((b: any) => b.label === 'Graphene Nano Coating')?.amount || 0 });
-        if (selectedServices.wetSanding) selectedServicesArray.push({ id: serviceId++, name: 'Wet Sanding & Correction', price: breakdown?.find((b: any) => b.label === 'Wet Sanding & Correction')?.amount || 0 });
-        if (selectedServices.bottomPainting) selectedServicesArray.push({ id: serviceId++, name: 'Bottom Painting', price: breakdown?.find((b: any) => b.label === 'Bottom Painting')?.amount || 0 });
-        if (selectedServices.vinyl) selectedServicesArray.push({ id: serviceId++, name: 'Vinyl Removal & Installation', price: breakdown?.find((b: any) => b.label === 'Vinyl Removal & Installation')?.amount || 0 });
+        // Build selected services array for Stripe using lineItems (already correctly parsed from breakdown strings)
+        const selectedServicesArray = lineItems.map((item, i) => ({
+          id: i + 1,
+          name: item.label,
+          price: item.amount,
+        }));
         
         // Create Stripe checkout session
         const checkoutResult = await createCheckoutSession.mutateAsync({
