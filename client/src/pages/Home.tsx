@@ -277,7 +277,7 @@ export default function Home() {
           boatType: boatDetails.type,
           serviceLocation: boatDetails.location,
           selectedServices: selectedServicesArray,
-          depositAmount: 100, // $1 in cents
+          depositAmount: 25000, // $250 in cents
           estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
           successUrl: 'https://booking.a1marinecare.ca/booking',
           cancelUrl: window.location.href,
@@ -741,10 +741,10 @@ export default function Home() {
                     <>
                       <div className="flex items-center justify-between py-3 border-t border-white/10">
                         <span className="text-sm text-white/50">Deposit Required</span>
-                        <span className="text-lg font-semibold text-white">$1.00</span>
+                        <span className="text-lg font-semibold text-white">$250.00</span>
                       </div>
                       <p className="text-xs text-white/30">
-                        $1 deposit secures your service appointment and is applied to the final invoice.
+                        $250 deposit secures your service appointment and is applied to the final invoice.
                       </p>
                     </>
                   )}
@@ -779,9 +779,9 @@ export default function Home() {
                       {isSubmitting ? (
                         <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
                       ) : estimate.requiresManualReview ? (
-                        "Submit for Review ($1 Deposit)"
+                        "Submit for Review ($250 Deposit)"
                       ) : (
-                        "Pay $1 Deposit"
+                        "Pay $250 Deposit"
                       )}
                     </Button>
                     {!estimate.requiresManualReview && (
