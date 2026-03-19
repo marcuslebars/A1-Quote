@@ -260,10 +260,11 @@ export default function Home() {
         window.location.href = '/thank-you';
       } else {
         // Build selected services array for Stripe using per-service subtotals (accurate prices from pricing engine)
+        // price must be in cents to match server-side expectation (server divides by 100 for display)
         const selectedServicesArray = perServiceSubtotals.map((item, i) => ({
           id: i + 1,
           name: item.name,
-          price: item.price,
+          price: Math.round(item.price * 100),
         }));
         
         // Create Stripe checkout session
