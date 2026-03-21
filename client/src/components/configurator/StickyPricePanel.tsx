@@ -88,7 +88,7 @@ export default function StickyPricePanel({
                   <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                  $250 deposit secures your service appointment and is applied to the final invoice.
+                  $250 deposit is collected after you choose your service date. It is applied to the final invoice.
                 </p>
               </div>
             )}
@@ -131,9 +131,9 @@ export default function StickyPricePanel({
                     Processing...
                   </>
                 ) : requiresManualReview ? (
-                  "Submit for Review ($250 Deposit)"
+                  "Book Now (Review Required)"
                 ) : (
-                  "Pay $250 Deposit"
+                  "Book Now"
                 )}
               </Button>
 
@@ -246,7 +246,7 @@ export default function StickyPricePanel({
                       <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
                     </div>
                     <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                      $250 deposit secures your service appointment and is applied to the final invoice.
+                      $250 deposit is collected after you choose your service date. It is applied to the final invoice.
                     </p>
                   </div>
                 )}
@@ -289,9 +289,9 @@ export default function StickyPricePanel({
                         Processing...
                       </>
                     ) : requiresManualReview ? (
-                      "Submit for Review ($250 Deposit)"
+                      "Book Now (Review Required)"
                     ) : (
-                      "Pay $250 Deposit"
+                      "Book Now"
                     )}
                   </Button>
 
@@ -349,7 +349,7 @@ export default function StickyPricePanel({
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Pay Deposit"
+                    "Book Now"
                   )}
                 </Button>
               </div>

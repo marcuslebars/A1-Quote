@@ -75,7 +75,6 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
   const submitQuote = trpc.quotes.submit.useMutation();
-  const createCheckoutSession = trpc.quotes.createCheckoutSession.useMutation();
 
   // Learn More modal
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
@@ -229,6 +228,8 @@ export default function Home() {
   }, [boatDetails.length, boatDetails.type, selectedServices, gelcoatConfig, exteriorConfig, interiorConfig, ceramicConfig, grapheneConfig, wetSandingConfig, bottomPaintingConfig, vinylConfig]);
 
   // ── Submit handler ──
+  // New flow: submit quote, then redirect directly to booking page.
+  // Stripe deposit is collected AFTER the customer picks their date on the booking page.
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -255,40 +256,31 @@ export default function Home() {
         },
       });
       localStorage.setItem('lastQuoteId', result.quoteId.toString());
-      
-      if (isTestMode) {
-        window.location.href = '/thank-you';
-      } else {
-        // Build selected services array for Stripe using per-service subtotals (accurate prices from pricing engine)
-        // price must be in cents to match server-side expectation (server divides by 100 for display)
-        const selectedServicesArray = perServiceSubtotals.map((item, i) => ({
-          id: i + 1,
-          name: item.name,
-          price: Math.round(item.price * 100),
-        }));
-        
-        // Create Stripe checkout session
-        const checkoutResult = await createCheckoutSession.mutateAsync({
-          quoteId: result.quoteId.toString(),
-          customerName: contactInfo.fullName,
-          customerEmail: contactInfo.email,
-          customerPhone: contactInfo.phone,
-          boatLength: boatDetails.length,
-          boatType: boatDetails.type,
-          serviceLocation: boatDetails.location,
-          selectedServices: selectedServicesArray,
-          depositAmount: 25000, // $250 in cents
-          estimatedTotal: Math.round((estimate?.subtotal || 0) * 100),
-          successUrl: 'https://booking.a1marinecare.ca/booking',
-          cancelUrl: window.location.href,
-        });
-        
-        if (checkoutResult.url) {
-          window.location.href = checkoutResult.url;
-        } else {
-          throw new Error('No checkout URL returned');
-        }
-      }
+
+      // Build selected services array for the booking portal
+      const selectedServicesArray = perServiceSubtotals.map((item, i) => ({
+        id: i + 1,
+        name: item.name,
+        price: Math.round(item.price * 100),
+      }));
+
+      // Build booking portal URL with all quote data so the booking page
+      // can display a service summary and later create the Stripe session.
+      const bookingParams = new URLSearchParams({
+        quoteId: result.quoteId.toString(),
+        customerName: contactInfo.fullName,
+        customerEmail: contactInfo.email,
+        customerPhone: contactInfo.phone,
+        boatLength: boatDetails.length.toString(),
+        boatType: boatDetails.type,
+        serviceLocation: boatDetails.location,
+        services: JSON.stringify(selectedServicesArray),
+        estimatedTotal: ((estimate?.subtotal || 0)).toFixed(2),
+        depositAmount: '250.00',
+      });
+
+      const bookingUrl = `https://booking.a1marinecare.ca/booking?${bookingParams.toString()}`;
+      window.location.href = bookingUrl;
     } catch (error) {
       console.error('Failed to submit quote:', error);
       alert('Failed to submit quote. Please try again.');
@@ -744,7 +736,7 @@ export default function Home() {
                         <span className="text-lg font-semibold text-white">$250.00</span>
                       </div>
                       <p className="text-xs text-white/30">
-                        $250 deposit secures your service appointment and is applied to the final invoice.
+                        $250 deposit is collected after you choose your service date. It is applied to the final invoice.
                       </p>
                     </>
                   )}
@@ -768,8 +760,8 @@ export default function Home() {
 
                   {/* CTA */}
                   <div className="space-y-2.5 pt-2">
-                    <p className="text-center text-sm font-semibold text-white">Ready to Secure Your Service?</p>
-                    <p className="text-center text-xs text-white/40">Your instant estimate will be confirmed after inspection.</p>
+                    <p className="text-center text-sm font-semibold text-white">Ready to Book Your Service?</p>
+                    <p className="text-center text-xs text-white/40">Choose your date first, then secure with a $250 deposit.</p>
                     <Button
                       size="lg"
                       className="w-full bg-[#00FFFF] text-black hover:bg-[#00FFFF]/90 font-semibold h-12 rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
@@ -779,9 +771,9 @@ export default function Home() {
                       {isSubmitting ? (
                         <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
                       ) : estimate.requiresManualReview ? (
-                        "Submit for Review ($250 Deposit)"
+                        "Book Now (Review Required)"
                       ) : (
-                        "Pay $250 Deposit"
+                        "Book Now"
                       )}
                     </Button>
                     {!estimate.requiresManualReview && (
@@ -830,7 +822,7 @@ export default function Home() {
               Trusted by boat owners across Ontario's premier boating regions.
             </p>
             <p className="text-xs text-white/20 pt-2">
-              &copy; 2026 A1 Marine Care. After making your deposit, you'll be contacted by our agent to schedule your service date and time.
+              &copy; 2026 A1 Marine Care. Choose your service date, then secure your appointment with a $250 deposit.
             </p>
             <p className="text-xs text-white/20 pt-1">
               <a href="/terms" className="hover:text-[#00FFFF]/60 transition-colors underline underline-offset-2">Terms of Service</a>
