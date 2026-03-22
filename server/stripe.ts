@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { Request, Response } from "express";
 import { updateQuotePaymentStatus, getQuoteById, createBooking } from "./db";
-import { triggerMarinaCall } from "./elevenlabs";
+import { triggerMarinaCall, triggerBookingConfirmationCall } from "./elevenlabs";
 import { sendBookingConfirmationEmail } from "./email";
 
 /**
@@ -142,6 +142,26 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             console.log("[Stripe Webhook] Thank-you email sent to", customerEmail);
           } catch (err) {
             console.error("[Stripe Webhook] Failed to send thank-you email:", err);
+          }
+
+          // Trigger AI voice call to confirm booking
+          if (meta.customerPhone) {
+            try {
+              const callResult = await triggerBookingConfirmationCall({
+                customerName,
+                phoneNumber: meta.customerPhone,
+                services: servicesLabel,
+                location: meta.serviceLocation || "Your marina",
+                depositAmount: 25000, // $250 in cents
+              });
+              if (callResult.success) {
+                console.log("[Stripe Webhook] Booking confirmation call initiated:", callResult.conversationId);
+              } else {
+                console.error("[Stripe Webhook] Failed to initiate booking confirmation call:", callResult.error);
+              }
+            } catch (err) {
+              console.error("[Stripe Webhook] Error triggering booking confirmation call:", err);
+            }
           }
         }
 

@@ -16,6 +16,17 @@ interface MarinaCallContext {
   depositAmount?: number;
 }
 
+interface BookingConfirmationCallContext {
+  customerName: string;
+  phoneNumber: string;
+  services: string;
+  location: string;
+  appointmentDate?: string; // e.g., "December 15, 2024"
+  appointmentTime?: string; // e.g., "2:00 PM"
+  depositAmount?: number; // in cents
+  agentId?: string; // optional override for a specific booking confirmation agent
+}
+
 export async function triggerMarinaCall(
   phoneNumber: string,
   context?: MarinaCallContext
@@ -100,6 +111,84 @@ export async function triggerMarinaCall(
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+/**
+ * Trigger a booking confirmation call via ElevenLabs AI Voice Agent.
+ * Called after a customer completes payment for their booking deposit.
+ * Uses the same Twilio + ElevenLabs infrastructure as triggerMarinaCall.
+ */
+export async function triggerBookingConfirmationCall(
+  context: BookingConfirmationCallContext
+) {
+  if (!ELEVENLABS_API_KEY || !ELEVENLABS_AGENT_ID || !ELEVENLABS_PHONE_NUMBER_ID) {
+    console.error('[ElevenLabs] Missing credentials for booking confirmation call');
+    return { 
+      success: false, 
+      error: 'Missing ElevenLabs credentials' 
+    };
+  }
+
+  try {
+    // Format phone number to E.164 format: +1234567890
+    const formattedPhone = context.phoneNumber.startsWith('+')
+      ? context.phoneNumber
+      : `+1${context.phoneNumber.replace(/\D/g, '')}`;
+
+    console.log('[ElevenLabs] Triggering booking confirmation call to:', formattedPhone);
+    console.log('[ElevenLabs] Booking context:', context);
+
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/convai/twilio/outbound-call`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          agent_id: context.agentId || ELEVENLABS_AGENT_ID,
+          agent_phone_number_id: ELEVENLABS_PHONE_NUMBER_ID,
+          to_number: formattedPhone,
+          conversation_initiation_client_data: {
+            dynamic_variables: {
+              customer_name: context.customerName,
+              services: context.services,
+              location: context.location,
+              appointment_date: context.appointmentDate || 'your scheduled date',
+              appointment_time: context.appointmentTime || 'your scheduled time',
+              deposit_amount: context.depositAmount ? `$${(context.depositAmount / 100).toFixed(2)}` : '$250.00',
+            },
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ElevenLabs] Booking confirmation call failed:', response.status, errorText);
+      return {
+        success: false,
+        error: `ElevenLabs API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    console.log('[ElevenLabs] Booking confirmation call initiated:', data);
+
+    return {
+      success: true,
+      conversationId: data.conversation_id,
+      callSid: data.callSid,
+      data,
+    };
+  } catch (error) {
+    console.error('[ElevenLabs] Failed to trigger booking confirmation call:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
