@@ -267,7 +267,7 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
     doc.fillColor(C.textLight).font('Helvetica').fontSize(8.5)
        .text('Booking Request', totalsX, y);
     doc.fillColor(C.text).font('Helvetica-Bold').fontSize(12)
-       .text('No upfront deposit', 0, y, { align: 'right', width: W - MX });
+       .text('Due upon receipt', 0, y, { align: 'right', width: W - MX });
 
     /* ════════════════════════════════════════════════════════════════
        BOOKING NOTE BOX
@@ -285,7 +285,7 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
        .text('Next Steps', MX + 16, y + 10);
     doc.fillColor(C.textLight).font('Helvetica').fontSize(8)
        .text(
-         'Reserve your preferred service date online with no upfront deposit. After booking, our team will follow up to confirm scheduling, scope, access requirements, and any final service details.',
+         'Reserve your preferred service date online. After booking, our team will follow up to confirm scheduling, scope, access requirements, and any final service details. Payment is due in full upon completion of service.',
          MX + 16, y + 24, { width: CW - 32 }
        );
     y += noteBoxH + 14;

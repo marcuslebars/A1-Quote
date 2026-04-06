@@ -84,10 +84,10 @@ export default function StickyPricePanel({
               <div className="px-6 py-4 border-b border-white/10">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm text-white/50">Booking Request</span>
-                  <span className="text-sm font-semibold text-white text-right">No upfront deposit</span>
+                  <span className="text-sm font-semibold text-white text-right">Due upon receipt</span>
                 </div>
                 <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                  Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
+                  Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details. Payment is due in full upon completion of service.
                 </p>
               </div>
             )}
@@ -242,10 +242,10 @@ export default function StickyPricePanel({
                   <div className="px-5 py-3 border-t border-white/10">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-sm text-white/50">Booking Request</span>
-                      <span className="text-sm font-semibold text-white text-right">No upfront deposit</span>
+                      <span className="text-sm font-semibold text-white text-right">Due upon receipt</span>
                     </div>
                     <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                      Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
+                      Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details. Payment is due in full upon completion of service.
                     </p>
                   </div>
                 )}

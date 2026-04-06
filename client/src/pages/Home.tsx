@@ -188,7 +188,7 @@ export default function Home() {
     return items;
   }, [estimate]);
 
-  // ── Per-service subtotals (used for Stripe description) ──
+  // ── Per-service subtotals for booking and summary display ──
   const perServiceSubtotals = useMemo(() => {
     if (!boatDetails.length) return [];
     const items: { name: string; price: number }[] = [];
@@ -227,6 +227,16 @@ export default function Home() {
     return items;
   }, [boatDetails.length, boatDetails.type, selectedServices, gelcoatConfig, exteriorConfig, interiorConfig, ceramicConfig, grapheneConfig, wetSandingConfig, bottomPaintingConfig, vinylConfig]);
 
+  const bookingSelectedServices = useMemo(() => {
+    return perServiceSubtotals
+      .filter((item) => item.price > 0)
+      .map((item, i) => ({
+        id: i + 1,
+        name: item.name,
+        price: Math.round(item.price * 100),
+      }));
+  }, [perServiceSubtotals]);
+
   // ── Submit handler ──
   // Submit the quote, then redirect directly to the booking page so the customer
   // can reserve a preferred date and time. The A1 team will follow up to confirm details.
@@ -257,15 +267,9 @@ export default function Home() {
       });
       localStorage.setItem('lastQuoteId', result.quoteId.toString());
 
-      // Build selected services array for the booking portal
-      const selectedServicesArray = perServiceSubtotals.map((item, i) => ({
-        id: i + 1,
-        name: item.name,
-        price: Math.round(item.price * 100),
-      }));
-
       // Build booking portal URL with all quote data so the booking page
       // can display a service summary and let the customer reserve a preferred spot.
+
       const bookingParams = new URLSearchParams({
         quoteId: result.quoteId.toString(),
         customerName: contactInfo.fullName,
@@ -274,7 +278,7 @@ export default function Home() {
         boatLength: boatDetails.length.toString(),
         boatType: boatDetails.type,
         serviceLocation: boatDetails.location,
-        services: JSON.stringify(selectedServicesArray),
+        services: JSON.stringify(bookingSelectedServices),
         estimatedTotal: ((estimate?.subtotal || 0)).toFixed(2),
       });
 
@@ -732,10 +736,10 @@ export default function Home() {
                     <>
                       <div className="flex items-center justify-between py-3 border-t border-white/10">
                         <span className="text-sm text-white/50">Booking Request</span>
-                        <span className="text-lg font-semibold text-white">No upfront deposit</span>
+                        <span className="text-lg font-semibold text-white">Due upon receipt</span>
                       </div>
                       <p className="text-xs text-white/30">
-                        Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
+                        Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details. Payment is due in full upon completion of service.
                       </p>
                     </>
                   )}
