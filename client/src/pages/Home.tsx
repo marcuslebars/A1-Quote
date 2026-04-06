@@ -139,15 +139,15 @@ export default function Home() {
   const hasSelectedServices = Object.values(selectedServices).some(v => v);
   const hasRequiredFields = boatDetails.length > 0 && boatDetails.type && boatDetails.location &&
     contactInfo.fullName && contactInfo.email && contactInfo.phone;
-  const canPayDeposit = hasSelectedServices && hasRequiredFields && estimate && estimate.subtotal > 0;
+  const canBookNow = hasSelectedServices && hasRequiredFields && estimate && estimate.subtotal > 0;
 
   // ── Progress step ──
   const currentStep = useMemo(() => {
-    if (canPayDeposit) return 3;
+    if (canBookNow) return 3;
     if (hasSelectedServices) return 2;
     if (boatDetails.length > 0 && boatDetails.type) return 1;
     return 0;
-  }, [canPayDeposit, hasSelectedServices, boatDetails.length, boatDetails.type]);
+  }, [canBookNow, hasSelectedServices, boatDetails.length, boatDetails.type]);
 
   // ── Line items for price panel ──
   const lineItems = useMemo(() => {
@@ -228,8 +228,8 @@ export default function Home() {
   }, [boatDetails.length, boatDetails.type, selectedServices, gelcoatConfig, exteriorConfig, interiorConfig, ceramicConfig, grapheneConfig, wetSandingConfig, bottomPaintingConfig, vinylConfig]);
 
   // ── Submit handler ──
-  // New flow: submit quote, then redirect directly to booking page.
-  // Stripe deposit is collected AFTER the customer picks their date on the booking page.
+  // Submit the quote, then redirect directly to the booking page so the customer
+  // can reserve a preferred date and time. The A1 team will follow up to confirm details.
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -265,7 +265,7 @@ export default function Home() {
       }));
 
       // Build booking portal URL with all quote data so the booking page
-      // can display a service summary and later create the Stripe session.
+      // can display a service summary and let the customer reserve a preferred spot.
       const bookingParams = new URLSearchParams({
         quoteId: result.quoteId.toString(),
         customerName: contactInfo.fullName,
@@ -276,7 +276,6 @@ export default function Home() {
         serviceLocation: boatDetails.location,
         services: JSON.stringify(selectedServicesArray),
         estimatedTotal: ((estimate?.subtotal || 0)).toFixed(2),
-        depositAmount: '250.00',
       });
 
       const bookingUrl = `https://booking.a1marinecare.ca/booking?${bookingParams.toString()}`;
@@ -589,8 +588,8 @@ export default function Home() {
                     </div>
                     <div className="rounded-xl bg-[#00FFFF]/[0.04] border border-[#00FFFF]/20 p-3.5">
                       <p className="text-sm text-white/70">
-                        <span className="font-semibold text-white">Photos will be requested after checkout.</span>{" "}
-                        After you complete your deposit, we'll send you an email requesting 3–10 interior photos so our team can prepare for your service.
+                        <span className="font-semibold text-white">Photos may be requested after booking.</span>{" "}
+                        Once you reserve your preferred service date, our team may follow up and request 3–10 interior photos so we can confirm the scope and prepare properly.
                       </p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -732,11 +731,11 @@ export default function Home() {
                   {!estimate.requiresManualReview && (
                     <>
                       <div className="flex items-center justify-between py-3 border-t border-white/10">
-                        <span className="text-sm text-white/50">Deposit Required</span>
-                        <span className="text-lg font-semibold text-white">$250.00</span>
+                        <span className="text-sm text-white/50">Booking Request</span>
+                        <span className="text-lg font-semibold text-white">No upfront deposit</span>
                       </div>
                       <p className="text-xs text-white/30">
-                        $250 deposit is collected after you choose your service date. It is applied to the final invoice.
+                        Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
                       </p>
                     </>
                   )}
@@ -761,11 +760,11 @@ export default function Home() {
                   {/* CTA */}
                   <div className="space-y-2.5 pt-2">
                     <p className="text-center text-sm font-semibold text-white">Ready to Book Your Service?</p>
-                    <p className="text-center text-xs text-white/40">Choose your date first, then secure with a $250 deposit.</p>
+                    <p className="text-center text-xs text-white/40">Choose your preferred date and we’ll follow up to confirm all service details.</p>
                     <Button
                       size="lg"
                       className="w-full bg-[#00FFFF] text-black hover:bg-[#00FFFF]/90 font-semibold h-12 rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)]"
-                      disabled={!canPayDeposit || isSubmitting}
+                      disabled={!canBookNow || isSubmitting}
                       onClick={handleSubmit}
                     >
                       {isSubmitting ? (
@@ -781,7 +780,7 @@ export default function Home() {
                         variant="outline"
                         size="lg"
                         className="w-full font-medium h-10 rounded-xl border-white/10 text-white/60 hover:text-white hover:bg-white/5 text-sm"
-                        disabled={isDownloadingPDF || !canPayDeposit}
+                        disabled={isDownloadingPDF || !canBookNow}
                         onClick={handleDownloadPDF}
                       >
                         {isDownloadingPDF ? (
@@ -804,7 +803,7 @@ export default function Home() {
             requiresManualReview={estimate?.requiresManualReview || false}
             reviewReasons={estimate?.reviewReasons || []}
             breakdown={estimate?.breakdown || []}
-            canSubmit={!!canPayDeposit}
+            canSubmit={!!canBookNow}
             isSubmitting={isSubmitting}
             isDownloadingPDF={isDownloadingPDF}
             onSubmit={handleSubmit}
@@ -822,7 +821,7 @@ export default function Home() {
               Trusted by boat owners across Ontario's premier boating regions.
             </p>
             <p className="text-xs text-white/20 pt-2">
-              &copy; 2026 A1 Marine Care. Choose your service date, then secure your appointment with a $250 deposit.
+              &copy; 2026 A1 Marine Care. Reserve your preferred service date online and our team will follow up to confirm all details.
             </p>
             <p className="text-xs text-white/20 pt-1">
               <a href="/terms" className="hover:text-[#00FFFF]/60 transition-colors underline underline-offset-2">Terms of Service</a>

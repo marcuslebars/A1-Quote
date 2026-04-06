@@ -34,7 +34,6 @@ export default function StickyPricePanel({
   onDownloadPDF,
 }: StickyPricePanelProps) {
   const hasItems = lineItems.length > 0;
-  const deposit = 250;
   const [mobileExpanded, setMobileExpanded] = useState(false);
 
   return (
@@ -80,15 +79,15 @@ export default function StickyPricePanel({
               </div>
             )}
 
-            {/* Deposit */}
+            {/* Booking request info */}
             {hasItems && !requiresManualReview && subtotal > 0 && (
               <div className="px-6 py-4 border-b border-white/10">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/50">Deposit Required</span>
-                  <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-sm text-white/50">Booking Request</span>
+                  <span className="text-sm font-semibold text-white text-right">No upfront deposit</span>
                 </div>
                 <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                  $250 deposit is collected after you choose your service date. It is applied to the final invoice.
+                  Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
                 </p>
               </div>
             )}
@@ -238,15 +237,15 @@ export default function StickyPricePanel({
                   </div>
                 )}
 
-                {/* Deposit info */}
+                {/* Booking request info */}
                 {!requiresManualReview && (
                   <div className="px-5 py-3 border-t border-white/10">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/50">Deposit Required</span>
-                      <span className="text-lg font-semibold text-white">${deposit.toFixed(2)}</span>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-sm text-white/50">Booking Request</span>
+                      <span className="text-sm font-semibold text-white text-right">No upfront deposit</span>
                     </div>
                     <p className="text-xs text-white/30 mt-1.5 leading-relaxed">
-                      $250 deposit is collected after you choose your service date. It is applied to the final invoice.
+                      Reserve your preferred date now and our team will follow up to confirm scheduling, scope, and final service details.
                     </p>
                   </div>
                 )}

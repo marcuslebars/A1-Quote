@@ -261,16 +261,16 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
        );
     y += 28;
 
-    // Deposit line
+    // Booking confirmation line
     doc.moveTo(totalsX, y).lineTo(MX + CW, y).lineWidth(0.5).strokeColor(C.border).stroke();
     y += 10;
     doc.fillColor(C.textLight).font('Helvetica').fontSize(8.5)
-       .text('Deposit Required', totalsX, y);
+       .text('Booking Request', totalsX, y);
     doc.fillColor(C.text).font('Helvetica-Bold').fontSize(12)
-       .text('$250.00', 0, y, { align: 'right', width: W - MX });
+       .text('No upfront deposit', 0, y, { align: 'right', width: W - MX });
 
     /* ════════════════════════════════════════════════════════════════
-       DEPOSIT NOTE BOX
+       BOOKING NOTE BOX
        ════════════════════════════════════════════════════════════════ */
     y += 30;
     if (y > 660) {
@@ -282,10 +282,10 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
     doc.roundedRect(MX, y, CW, noteBoxH, 4).fill('#F0FFFE');
     doc.rect(MX, y, 3, noteBoxH).fill(C.cyan); // left accent
     doc.fillColor(C.text).font('Helvetica-Bold').fontSize(8.5)
-       .text('Deposit Information', MX + 16, y + 10);
+       .text('Next Steps', MX + 16, y + 10);
     doc.fillColor(C.textLight).font('Helvetica').fontSize(8)
        .text(
-         'A $250 deposit secures your service appointment and is applied to the final invoice. After making your deposit, you will be contacted by our agent to schedule your service date and time.',
+         'Reserve your preferred service date online with no upfront deposit. After booking, our team will follow up to confirm scheduling, scope, access requirements, and any final service details.',
          MX + 16, y + 24, { width: CW - 32 }
        );
     y += noteBoxH + 14;
@@ -296,7 +296,7 @@ export function generateQuotePDF(params: QuotePDFParams): Promise<Buffer> {
     const notes: string[] = [];
 
     if (params.services.interior) {
-      notes.push('Interior: After checkout, we will send you an email requesting 3–10 interior photos so our team can prepare for your service.');
+      notes.push('Interior: After booking, we may send you an email requesting 3–10 interior photos so our team can confirm the scope and prepare for your service.');
     }
     if (params.services.gelcoat?.heavyOxidation) {
       notes.push('Gelcoat: A 20% heavy oxidation surcharge has been applied to the base gelcoat service price.');
